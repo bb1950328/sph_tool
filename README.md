@@ -20,5 +20,11 @@ yarn build
 yarn lint
 ```
 
+### Deploys to GitHub Pages
+```
+npm run deploy
+```
+Available at [https://bb1950328.github.io/sph_tool](https://bb1950328.github.io/sph_tool/)
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
