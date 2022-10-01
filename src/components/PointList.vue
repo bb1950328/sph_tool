@@ -1,22 +1,29 @@
 <template>
-  <button @click="newPoint()">Neuer Punkt</button>
-  <table>
+  <button type="button" class="btn btn-primary" @click="newPoint()">
+    <font-awesome-icon icon="fa-solid fa-plus"/>
+    Neuer Punkt
+  </button>
+  <table class="table table-striped table-bordered table-dark table-sm">
     <thead>
     <tr>
-      <th>Nr</th>
-      <th>Bezeichnung</th>
-      <th>Koordinaten</th>
-      <th></th>
+      <th scope="col">Nr</th>
+      <th scope="col">Bezeichnung</th>
+      <th scope="col">Koordinaten</th>
+      <th scope="col"></th>
     </tr>
     </thead>
     <tbody>
     <tr v-for="(pt, nr) in points" :key="nr">
-      <td>{{ nr }}</td>
+      <th scope="row">{{ nr }}</th>
       <td>{{ pt.description }}</td>
       <td>{{ formatCoordinates(pt.coordinates) }}</td>
       <td>
-        <button>✏</button>
-        <button @click="removePoint(nr)">🗑️</button>
+        <button type="button" class="btn btn-secondary btn-sm">
+          <font-awesome-icon icon="fa-solid fa-pen"/>
+        </button>
+        <button type="button" class="btn btn-danger btn-sm" @click="removePoint(nr)">
+          <font-awesome-icon icon="fa-solid fa-trash-can"/>
+        </button>
       </td>
     </tr>
     </tbody>
