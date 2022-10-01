@@ -241,4 +241,8 @@ export default {
 .edit-point-button {
   margin-right: 0.25rem;
 }
+
+#app > table {
+  margin-top: 0.5rem;
+}
 </style>
