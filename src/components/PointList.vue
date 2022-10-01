@@ -56,6 +56,20 @@
               </div>
               <input v-mask="'####'" class="form-control" placeholder="H" id="modalInputZ">
             </div>
+            <div class="" role="group" id="modalGPSandSwissTopoBtnGroup">
+              <button type="button" class="btn btn-sm btn-secondary" @click="insertXYfromGPSinModal()">X/Y
+                <font-awesome-icon icon="fa-solid fa-location-crosshairs"/>
+                GPS
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary" @click="insertHfromGPSinModal()">H
+                <font-awesome-icon icon="fa-solid fa-location-crosshairs"/>
+                GPS
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary" @click="insertHfromSwissTopoInModal()">H
+                <font-awesome-icon icon="fa-solid fa-map-location-dot"/>
+                SwissTopo
+              </button>
+            </div>
           </form>
         </div>
         <div class="modal-footer">
@@ -68,7 +82,7 @@
 </template>
 
 <script>
-import {formatCoordinates} from "@/util";
+import {formatCoordinates, formatCoordinateXYValue, formatCoordinateZValue, getCurrentPositionLV03} from "@/util";
 
 import {Modal} from "bootstrap"
 
@@ -112,13 +126,24 @@ export default {
     removePoint(nr) {
       delete this.points[nr];
     },
-    openModal(nr) {
+    setModalCoordinates: function (coordinates) {
+      let x = coordinates["x"];
+      let y = coordinates["y"];
+      let z = coordinates["z"];
+      if (x) {
+        document.getElementById("modalInputX").value = formatCoordinateXYValue(x);
+      }
+      if (y) {
+        document.getElementById("modalInputY").value = formatCoordinateXYValue(y);
+      }
+      if (z) {
+        document.getElementById("modalInputZ").value = formatCoordinateZValue(z);
+      }
+    }, openModal(nr) {
       this.currentlyEditingNr = nr;
       let point = this.points[this.currentlyEditingNr];
       document.getElementById("modalInputDescription").value = point["description"];
-      document.getElementById("modalInputX").value = point["coordinates"]["x"];
-      document.getElementById("modalInputY").value = point["coordinates"]["y"];
-      document.getElementById("modalInputZ").value = point["coordinates"]["z"];
+      this.setModalCoordinates(point["coordinates"]);
 
       this.modal = new Modal(document.getElementById("pointEditModal"));
       this.modal.show();
@@ -134,7 +159,27 @@ export default {
       point["coordinates"]["y"] = parseInt(document.getElementById("modalInputY").value.replace(" ", ""));
       point["coordinates"]["z"] = parseInt(document.getElementById("modalInputZ").value);
       this.closeModal();
-    }
+    },
+    insertXYfromGPSinModal() {
+      getCurrentPositionLV03(coordinates => {
+            delete coordinates["z"];
+            this.setModalCoordinates(coordinates);
+          },
+          error => console.error(error)//TODO better error handling (toast)
+      );
+    },
+    insertHfromGPSinModal() {
+      getCurrentPositionLV03(coordinates => {
+            delete coordinates["x"];
+            delete coordinates["y"];
+            this.setModalCoordinates(coordinates);
+          },
+          error => console.error(error)//TODO better error handling (toast)
+      );
+    },
+    insertHfromSwissTopoInModal() {
+
+    },
   },
   data() {
     return {
@@ -157,5 +202,11 @@ export default {
 </script>
 
 <style scoped>
+#modalGPSandSwissTopoBtnGroup {
+  margin-top: 0.5rem;
+}
 
+#modalGPSandSwissTopoBtnGroup button:not(:first-child) {
+  margin-left: 0.2rem;
+}
 </style>

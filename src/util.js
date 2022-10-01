@@ -59,3 +59,17 @@ export function WGS84toLV03(latitude, longitude, height) {
         + 6.94 * latAux;
     return [x, y, z];
 }
+
+export function getCurrentPositionLV03(successCallback, errorCallback) {
+    navigator.geolocation.getCurrentPosition(position => {
+            let [x, y, z] = WGS84toLV03(position.coords.latitude, position.coords.longitude, position.coords.altitude);
+            let hasAltitude = position.coords.altitude !== null;
+            successCallback({"x": x, "y": y, "z": hasAltitude ? z : null});
+        },
+        errorCallback,
+        {
+            enableHighAccuracy: true,
+            maximumAge: 100_000,
+        }
+    );
+}
