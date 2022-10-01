@@ -82,7 +82,13 @@
 </template>
 
 <script>
-import {formatCoordinates, formatCoordinateXYValue, formatCoordinateZValue, getCurrentPositionLV03} from "@/util";
+import {
+  formatCoordinates,
+  formatCoordinateXYValue,
+  formatCoordinateZValue,
+  getCurrentPositionLV03,
+  getHeightFromSwissTopo
+} from "@/util";
 
 import {Modal} from "bootstrap"
 
@@ -152,12 +158,17 @@ export default {
       this.modal.hide();
       this.currentlyEditingNr = null;
     },
+    getCoordinatesFromModalInputs: function () {
+      return {
+        x: parseInt(document.getElementById("modalInputX").value.replace(" ", "")),
+        y: parseInt(document.getElementById("modalInputY").value.replace(" ", "")),
+        z: parseInt(document.getElementById("modalInputZ").value),
+      };
+    },
     saveChangesFromModal() {
       let point = this.points[this.currentlyEditingNr];
       point["description"] = document.getElementById("modalInputDescription").value;
-      point["coordinates"]["x"] = parseInt(document.getElementById("modalInputX").value.replace(" ", ""));
-      point["coordinates"]["y"] = parseInt(document.getElementById("modalInputY").value.replace(" ", ""));
-      point["coordinates"]["z"] = parseInt(document.getElementById("modalInputZ").value);
+      point["coordinates"] = this.getCoordinatesFromModalInputs();
       this.closeModal();
     },
     insertXYfromGPSinModal() {
@@ -178,7 +189,10 @@ export default {
       );
     },
     insertHfromSwissTopoInModal() {
-
+      let modalCoords = this.getCoordinatesFromModalInputs();
+      getHeightFromSwissTopo(modalCoords["x"], modalCoords["y"],
+          height => this.setModalCoordinates({"z": height}),
+          error => console.error(error));
     },
   },
   data() {

@@ -73,3 +73,17 @@ export function getCurrentPositionLV03(successCallback, errorCallback) {
         }
     );
 }
+
+export function getHeightFromSwissTopo(x, y, successCallback, errorCallback) {
+    let params = new URLSearchParams({
+        easting: x,
+        northing: y,
+        sr: 21781
+    });
+    let url = "https://api3.geo.admin.ch/rest/services/height?" + params;
+    fetch(url)
+        .then(response => response.json())
+        .then(json => json["height"])
+        .then(successCallback)
+        .catch(errorCallback);
+}
