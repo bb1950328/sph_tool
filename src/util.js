@@ -14,3 +14,48 @@ export function formatCoordinateXYValue(value) {
 export function formatCoordinateZValue(value) {
     return Math.round(value).toString();
 }
+
+export function LV03toWGS84(x, y, z) {
+    let y_aux = (x - 600000) / 1000000;
+    let x_aux = (y - 200000) / 1000000;
+    let longitude = 2.6779094 +
+        4.728982 * y_aux +
+        0.791484 * y_aux * x_aux +
+        0.1306 * y_aux * Math.pow(x_aux, 2) -
+        0.0436 * Math.pow(y_aux, 3);
+    let latitude = 16.9023892 +
+        3.238272 * x_aux -
+        0.270978 * Math.pow(y_aux, 2) -
+        0.002528 * Math.pow(x_aux, 2) -
+        0.0447 * Math.pow(y_aux, 2) * x_aux -
+        0.0140 * Math.pow(x_aux, 3);
+    let h = z + 49.55
+        - 12.60 * y_aux
+        - 22.64 * x_aux;
+    return [latitude * 100 / 36, longitude * 100 / 36, h];
+}
+
+export function WGS84toLV03(latitude, longitude, height) {
+    let latitudeTotalSec = latitude * 3600;
+    let longitudeTotalSec = longitude * 3600;
+    // https://www.swisstopo.admin.ch/content/swisstopo-internet/en/topics/survey/reference-systems/switzerland/_jcr_content/contentPar/tabs/items/dokumente_publikatio/tabPar/downloadlist/downloadItems/516_1459343097192.download/ch1903wgs84_e.pdf
+    let latAux = (latitudeTotalSec - 169028.66) / 10000;
+    let lonAux = (longitudeTotalSec - 26782.5) / 10000;
+    let e = 2600072.37
+        + 211455.93 * lonAux
+        - 10938.51 * lonAux * latAux
+        - 0.36 * lonAux * Math.pow(lonAux, 2)
+        - 44.54 * Math.pow(lonAux, 3);
+    let n = 1200147.07
+        + 308807.95 * latAux
+        + 3745.25 * Math.pow(lonAux, 2)
+        + 76.63 * Math.pow(latAux, 2)
+        - 194.56 * Math.pow(lonAux, 2) * latAux
+        + 119.79 * Math.pow(latAux, 3);
+    let x = e - 2000000;
+    let y = n - 1000000;
+    let z = height - 49.55
+        + 2.73 * lonAux
+        + 6.94 * latAux;
+    return [x, y, z];
+}
