@@ -18,7 +18,7 @@
       <td>{{ pt.description }}</td>
       <td>{{ formatCoordinates(pt.coordinates) }}</td>
       <td>
-        <button type="button" class="btn btn-secondary btn-sm">
+        <button type="button" class="btn btn-secondary btn-sm" @click="openModal(nr)">
           <font-awesome-icon icon="fa-solid fa-pen"/>
         </button>
         <button type="button" class="btn btn-danger btn-sm" @click="removePoint(nr)">
@@ -28,10 +28,51 @@
     </tr>
     </tbody>
   </table>
+
+  <div class="modal" tabindex="-1" role="dialog" id="pointEditModal">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Punkt {{ currentlyEditingNr }} bearbeiten</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="mb-3">
+              <label for="modalInputDescription" class="form-label">Beschreibung</label>
+              <input type="text" class="form-control" id="modalInputDescription">
+            </div>
+            <label for="modalInputCoordinateGroup" class="form-label">Koordinaten</label>
+            <div class="input-group" id="modalInputCoordinateGroup">
+              <input v-mask="'### ###'" class="form-control" placeholder="X" id="modalInputX">
+              <div class="input-group-prepend">
+                <span class="input-group-text">/</span>
+              </div>
+              <input v-mask="'### ###'" class="form-control" placeholder="Y" id="modalInputY">
+              <div class="input-group-prepend">
+                <span class="input-group-text">/</span>
+              </div>
+              <input v-mask="'####'" class="form-control" placeholder="H" id="modalInputZ">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" @click="saveChangesFromModal()">Speichern</button>
+          <button type="button" class="btn btn-secondary" @click="closeModal()">Abbrechen</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import {formatCoordinates} from "@/util";
+
+import {Modal} from "bootstrap"
+
+import {mask} from "vue-the-mask";
 
 export default {
   name: "PointList",
@@ -54,10 +95,12 @@ export default {
       return points;
     },
     newPoint() {
-      this.points[this.findNextFreeNumber()] = {
+      let nr = this.findNextFreeNumber();
+      this.points[nr] = {
         "description": "Neuer Punkt",
         "coordinates": {"x": 0, "y": 0, "z": 0}
       };
+      this.openModal(nr);
     },
     findNextFreeNumber() {
       let nextFree = 1;
@@ -68,11 +111,35 @@ export default {
     },
     removePoint(nr) {
       delete this.points[nr];
+    },
+    openModal(nr) {
+      this.currentlyEditingNr = nr;
+      let point = this.points[this.currentlyEditingNr];
+      document.getElementById("modalInputDescription").value = point["description"];
+      document.getElementById("modalInputX").value = point["coordinates"]["x"];
+      document.getElementById("modalInputY").value = point["coordinates"]["y"];
+      document.getElementById("modalInputZ").value = point["coordinates"]["z"];
+
+      this.modal = new Modal(document.getElementById("pointEditModal"));
+      this.modal.show();
+    },
+    closeModal() {
+      this.modal.hide();
+      this.currentlyEditingNr = null;
+    },
+    saveChangesFromModal() {
+      let point = this.points[this.currentlyEditingNr];
+      point["description"] = document.getElementById("modalInputDescription").value;
+      point["coordinates"]["x"] = parseInt(document.getElementById("modalInputX").value.replace(" ", ""));
+      point["coordinates"]["y"] = parseInt(document.getElementById("modalInputY").value.replace(" ", ""));
+      point["coordinates"]["z"] = parseInt(document.getElementById("modalInputZ").value);
+      this.closeModal();
     }
   },
   data() {
     return {
       points: this.loadPoints(),
+      currentlyEditingNr: null,
     }
   },
   watch: {
@@ -82,6 +149,9 @@ export default {
         this.storePoints();
       }
     }
+  },
+  directives: {
+    mask,
   }
 }
 </script>
