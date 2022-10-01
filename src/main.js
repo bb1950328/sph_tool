@@ -3,8 +3,8 @@ import App from './App.vue'
 
 import {library} from "@fortawesome/fontawesome-svg-core";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {faPen, faTrashCan, faPlus, faMapLocationDot, faLocationCrosshairs} from "@fortawesome/free-solid-svg-icons";
-library.add(faPen, faTrashCan, faPlus, faMapLocationDot, faLocationCrosshairs);
+import {faPen, faTrashCan, faPlus, faMapLocationDot, faLocationCrosshairs, faPaste} from "@fortawesome/free-solid-svg-icons";
+library.add(faPen, faTrashCan, faPlus, faMapLocationDot, faLocationCrosshairs, faPaste);
 
 import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap"

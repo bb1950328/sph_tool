@@ -18,10 +18,10 @@
       <td>{{ pt.description }}</td>
       <td>{{ formatCoordinates(pt.coordinates) }}</td>
       <td>
-        <button type="button" class="btn btn-secondary btn-sm" @click="openModal(nr)">
+        <button type="button" class="btn btn-outline-secondary btn-sm edit-point-button" @click="openModal(nr)">
           <font-awesome-icon icon="fa-solid fa-pen"/>
         </button>
-        <button type="button" class="btn btn-danger btn-sm" @click="removePoint(nr)">
+        <button type="button" class="btn btn-outline-danger btn-sm delete-point-button" @click="removePoint(nr)">
           <font-awesome-icon icon="fa-solid fa-trash-can"/>
         </button>
       </td>
@@ -57,17 +57,24 @@
               <input v-mask="'####'" class="form-control" placeholder="H" id="modalInputZ">
             </div>
             <div class="" role="group" id="modalGPSandSwissTopoBtnGroup">
-              <button type="button" class="btn btn-sm btn-secondary" @click="insertXYfromGPSinModal()">X/Y
+              <button type="button" class="btn btn-sm btn-secondary" @click="insertXYfromGPSinModal()">
+                X/Y
                 <font-awesome-icon icon="fa-solid fa-location-crosshairs"/>
                 GPS
               </button>
-              <button type="button" class="btn btn-sm btn-secondary" @click="insertHfromGPSinModal()">H
+              <button type="button" class="btn btn-sm btn-secondary" @click="insertHfromGPSinModal()">
+                H
                 <font-awesome-icon icon="fa-solid fa-location-crosshairs"/>
                 GPS
               </button>
-              <button type="button" class="btn btn-sm btn-secondary" @click="insertHfromSwissTopoInModal()">H
+              <button type="button" class="btn btn-sm btn-secondary" @click="insertHfromSwissTopoInModal()">
+                H
                 <font-awesome-icon icon="fa-solid fa-map-location-dot"/>
                 SwissTopo
+              </button>
+              <button type="button" class="btn btn-sm btn-secondary" @click="pasteIntoModal()">
+                <font-awesome-icon icon="fa-solid fa-paste"/>
+                Paste
               </button>
             </div>
           </form>
@@ -83,6 +90,7 @@
 
 <script>
 import {
+  extractCoordinatesFromString,
   formatCoordinates,
   formatCoordinateXYValue,
   formatCoordinateZValue,
@@ -194,6 +202,13 @@ export default {
           height => this.setModalCoordinates({"z": height}),
           error => console.error(error));
     },
+    pasteIntoModal() {
+      navigator
+          .clipboard
+          .readText()
+          .then(extractCoordinatesFromString)
+          .then(this.setModalCoordinates);
+    }
   },
   data() {
     return {
@@ -222,5 +237,8 @@ export default {
 
 #modalGPSandSwissTopoBtnGroup button:not(:first-child) {
   margin-left: 0.2rem;
+}
+.edit-point-button {
+  margin-right: 0.25rem;
 }
 </style>

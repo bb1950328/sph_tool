@@ -1,3 +1,9 @@
+const LV03_X_MIN = 485_000;
+const LV03_X_MAX = 835_000;
+const LV03_Y_MIN = 74_000;
+const LV03_Y_MAX = 296_000;
+const LV03_XY_MIDDLE = (LV03_Y_MAX + LV03_X_MIN) / 2; // if a coordinate is below that value, it's more likely to be a Y value, otherwise an X value
+
 export function formatCoordinates(coords) {
     let xStr = formatCoordinateXYValue(coords["x"]);
     let yStr = formatCoordinateXYValue(coords["y"]);
@@ -86,4 +92,39 @@ export function getHeightFromSwissTopo(x, y, successCallback, errorCallback) {
         .then(json => json["height"])
         .then(successCallback)
         .catch(errorCallback);
+}
+
+export function extractCoordinatesFromString(text) {
+    //todo unit tests for this function
+    let regex = new RegExp(/[12]?[' ]?(\d{3})[' ]?(\d{3})(\.\d+)?/, "g");
+    let rest = text;
+    let result = {};
+
+    for (const match of text.matchAll(regex)) {
+        console.log(match[0]);
+        let number = parseInt(match[1]) * 1000 + parseInt(match[2]);
+        if (match[3] != null) {
+            if (parseInt(match[3][1]) >= 5) {
+                number++;//number has decimal digits > 0.5
+            }
+        }
+        if (LV03_Y_MIN <= number && number <= LV03_XY_MIDDLE) {
+            result["y"] = number;
+        } else if (LV03_XY_MIDDLE <= number && number <= LV03_X_MAX) {
+            result["x"] = number;
+        }
+        rest = rest.replace(match[0], "");
+    }
+
+    let regexZ = new RegExp(/(\d)[' ]?(\d{2,4})(\.\d+)?/);
+    let match = regexZ.exec(rest);
+    if (match != null) {
+        let number = "";
+        for (let i = 1; match[i] != null; i++) {
+            number += match[i];
+        }
+        result["z"] = Math.round(parseFloat(number));
+    }
+
+    return result;
 }
