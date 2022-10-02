@@ -21,6 +21,17 @@ export function formatCoordinateZValue(value) {
     return Math.round(value).toString();
 }
 
+export function formatArtilleryPromilleValue(value) {
+    value = Math.round(value);
+    let valueInRange = ((value % 6400) + 6400) % 6400;
+    if (value < 0) {
+        value = valueInRange - 6400;
+        return `${valueInRange}‰ (≙${value}‰)`;
+    } else {
+        return `${valueInRange}‰`;
+    }
+}
+
 export function LV03toWGS84(x, y, z) {
     let y_aux = (x - 600000) / 1000000;
     let x_aux = (y - 200000) / 1000000;

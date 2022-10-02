@@ -13,7 +13,7 @@
     </tr>
     </thead>
     <tbody>
-    <tr v-for="(pt, nr) in points" :key="nr">
+    <tr v-for="(pt, nr) in allPoints" :key="nr">
       <th scope="row">{{ nr }}</th>
       <td>{{ pt.description }}</td>
       <td>{{ formatCoordinates(pt.coordinates) }}</td>
@@ -102,29 +102,15 @@ import {Modal} from "bootstrap"
 
 import {mask} from "vue-the-mask";
 
+import {allPoints} from "@/points_list"
+
 export default {
   name: "PointList",
   methods: {
     formatCoordinates: formatCoordinates,
-    storePoints() {
-      localStorage.setItem("points", JSON.stringify(this.points));
-    },
-    loadPoints() {
-      let points = localStorage.getItem("points");
-      if (points === null) {
-        points = {
-          1: {"description": "Kaserne Chur", "coordinates": {"x": 758603.97, "y": 190604.61, "z": 582.2}},
-          2: {"description": "Halle 6", "coordinates": {"x": 757100.66, "y": 190421.80, "z": 565.1}},
-          3: {"description": "Spl 342", "coordinates": {"x": 756828.17, "y": 191188.90, "z": 567.8}},
-        }
-      } else {
-        points = JSON.parse(points);
-      }
-      return points;
-    },
     newPoint() {
       let nr = this.findNextFreeNumber();
-      this.points[nr] = {
+      this.allPoints[nr] = {
         "description": "Neuer Punkt",
         "coordinates": {"x": 0, "y": 0, "z": 0}
       };
@@ -132,13 +118,13 @@ export default {
     },
     findNextFreeNumber() {
       let nextFree = 1;
-      while (Object.hasOwn(this.points, nextFree.toString())) {
+      while (Object.hasOwn(this.allPoints, nextFree.toString())) {
         ++nextFree;
       }
       return nextFree;
     },
     removePoint(nr) {
-      delete this.points[nr];
+      delete this.allPoints[nr];
     },
     setModalCoordinates: function (coordinates) {
       let x = coordinates["x"];
@@ -155,7 +141,7 @@ export default {
       }
     }, openModal(nr) {
       this.currentlyEditingNr = nr;
-      let point = this.points[this.currentlyEditingNr];
+      let point = this.allPoints[this.currentlyEditingNr];
       document.getElementById("modalInputDescription").value = point["description"];
       this.setModalCoordinates(point["coordinates"]);
 
@@ -174,7 +160,7 @@ export default {
       };
     },
     saveChangesFromModal() {
-      let point = this.points[this.currentlyEditingNr];
+      let point = this.allPoints[this.currentlyEditingNr];
       point["description"] = document.getElementById("modalInputDescription").value;
       point["coordinates"] = this.getCoordinatesFromModalInputs();
       this.closeModal();
@@ -212,16 +198,8 @@ export default {
   },
   data() {
     return {
-      points: this.loadPoints(),
       currentlyEditingNr: null,
-    }
-  },
-  watch: {
-    points: {
-      deep: true,
-      handler() {
-        this.storePoints();
-      }
+      allPoints: allPoints,
     }
   },
   directives: {
@@ -238,6 +216,7 @@ export default {
 #modalGPSandSwissTopoBtnGroup button:not(:first-child) {
   margin-left: 0.2rem;
 }
+
 .edit-point-button {
   margin-right: 0.25rem;
 }
