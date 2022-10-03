@@ -1,5 +1,5 @@
 <template>
-  <select @change="changeTool($event.target.value)" class="form-select" id="nav-select">
+  <select @change="changeTool($event.target.value)" class="form-select" id="nav-select" v-model="currentTool">
     <option v-for="to in allTools" :key="to[0]" :value="to[0]">{{ to[1] }}</option>
   </select>
   <KeepAlive>
@@ -19,15 +19,46 @@ export default {
     CoordinateCalculations,
   },
   data() {
+    let currentTool = "PointList";
+    let allTools = [["PointList", "Punkteliste"], ["CoordinateCalculations", "Koordinatenberechnungen"]];
+    if (window.location.hash) {
+      for (let i = 0; i < allTools.length; i++) {
+        let fragment = window.location.hash.slice(1);
+        if (allTools[i][0] === fragment) {
+          currentTool = fragment;
+          break;
+        }
+      }
+    }
     return {
-      currentTool: "PointList",
-      allTools: [["PointList", "Punkteliste"], ["CoordinateCalculations", "Koordinatenberechnungen"]],
+      currentTool: currentTool,
+      allTools: allTools,
     }
   },
+  mounted() {
+    this.updateDocumentTitle(this.currentTool);
+  },
   methods: {
+    updateDocumentTitle(newTool) {
+      document.title = "sph_tool - " + this.getToolDisplayName(newTool);
+    },
     changeTool(newTool) {
       this.currentTool = newTool;
+      if (history.pushState) {
+        history.pushState(null, null, "#" + newTool);
+      } else {
+        location.hash = "#" + newTool;
+      }
+      this.updateDocumentTitle(newTool);
     },
+    getToolDisplayName(toolInternalName) {
+      for (let i = 0; i < this.allTools.length; i++) {
+        if (toolInternalName === this.allTools[i][0]) {
+          return this.allTools[i][1];
+        }
+      }
+      return null;
+    }
   },
 }
 </script>
