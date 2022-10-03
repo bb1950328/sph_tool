@@ -10,17 +10,22 @@
 <script>
 import PointList from "@/components/PointList";
 import CoordinateCalculations from "@/components/CoordinateCalculations";
-
+import BallisticsCalculator from "@/components/BallisticsCalculator";
 
 export default {
   name: 'App',
   components: {
     PointList,
     CoordinateCalculations,
+    BallisticsCalculator,
   },
   data() {
     let currentTool = "PointList";
-    let allTools = [["PointList", "Punkteliste"], ["CoordinateCalculations", "Koordinatenberechnungen"]];
+    let allTools = [
+      ["PointList", "Punkteliste"],
+      ["CoordinateCalculations", "Koordinatenberechnungen"],
+      ["BallisticsCalculator", "Ballistikrechner"],
+    ];
     if (window.location.hash) {
       for (let i = 0; i < allTools.length; i++) {
         let fragment = window.location.hash.slice(1);
