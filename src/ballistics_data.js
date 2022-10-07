@@ -148,4 +148,41 @@ export const GP04_FLIGHT_TIME = [
     [1000, 1.6],
     [1100, 1.85],
     [1200, 2.1],
-]
+];
+
+function findLowerHigherRows(table, value0) {
+    let lowerRow, higherRow;
+    if (value0 <= table[0][0]) {
+        lowerRow = table[0];
+        higherRow = lowerRow;
+    } else if (value0 >= table[table.length - 1][0]) {
+        lowerRow = table[table.length - 1];
+        higherRow = lowerRow;
+    } else {
+        for (let i = 0; i < table.length; i++) {
+            if (table[i][0] < value0) {
+                lowerRow = table[i];
+                higherRow = table[i + 1];
+            } else if (table[i][0] === value0) {
+                lowerRow = table[i];
+                higherRow = table[i];
+            }
+        }
+    }
+    return {lowerRow, higherRow};
+}
+
+export function lookUpValue1D(table, value0) {
+    let {lowerRow, higherRow} = findLowerHigherRows(table, value0);
+    if (lowerRow[0] === higherRow[0]) {
+        return lowerRow[1];
+    } else {
+        let fraction = (value0 - lowerRow[0]) / (higherRow[0] - lowerRow[0]);
+        return lowerRow[1] * fraction + higherRow[1] * (1 - fraction);
+    }
+}
+
+export function lookUpValue2D(table, value0, value1) {
+    let {lowerRow, higherRow} = findLowerHigherRows(table, value0);
+    //todo
+}
