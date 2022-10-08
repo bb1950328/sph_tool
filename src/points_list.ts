@@ -9,7 +9,7 @@ function storePoints() {
 }
 
 function loadPoints() {
-    let points = localStorage.getItem("points");
+    const points = localStorage.getItem("points");
     if (points === null) {
         return {
             1: {"description": "Kaserne Chur", "coordinates": {"x": 758603.97, "y": 190604.61, "z": 582.2}},
