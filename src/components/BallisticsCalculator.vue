@@ -5,20 +5,27 @@
         <label for="distance-range-input" class="form-label">Distanz</label>
         <input id="distance-range-input" type="range" class="form-range" v-model="distance" min="100" max="1200">
       </div>
-      <div class="col-3" id="distance-value-input-container">
+      <div class="col-3 double-input-value-container">
         <label for="distance-value-input" class="form-label" hidden>Distanz</label>
         <input id="distance-value-input" type="number" class="form-control" v-model="distance">
       </div>
     </div>
     <div class="mb-3 row">
-      <div class="col-6">
-        <label for="windSpeedInput" class="form-label">Windgeschwindigkeit</label>
-        <input id="windSpeedInput" type="number" class="form-control" v-model="windSpeed">
+      <div class="col-9">
+        <label for="wind-speed-range-input" class="form-label">Windgeschwindigkeit</label>
+        <input id="wind-speed-range-input" type="range" class="form-range" v-model="windSpeed" min="0" max="10">
       </div>
-      <div class="col-6">
+      <div class="col-3 double-input-value-container">
+        <label for="wind-speed-value-input" class="form-label" hidden>Windgeschwindigkeit</label>
+        <input id="wind-speed-value-input" class="form-control" type="number" v-model="windSpeed" min="0" max="10">
+      </div>
+    </div>
+    <div class="mb-3 row">
+      <div class="col-12">
         <label for="windDirectionInput" class="form-label">Windrichtung (Uhr)</label>
-        <input id="windDirectionInput" type="number" class="form-control" v-model="windClock">
+        <input id="windDirectionInput" type="number" class="form-control" v-model="windClock" min="0" max="12">
       </div>
+      <!-- TODO add some kind of intuitive round input -->
     </div>
     <div class="mb-3 row">
       <div class="col-4">
@@ -237,7 +244,7 @@ export default {
   display: block !important;
 }
 
-#distance-value-input-container {
+.double-input-value-container {
   display: flex;
   align-items: flex-end;
 }
