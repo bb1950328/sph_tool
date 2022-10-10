@@ -75,7 +75,6 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /*background-color: black;*/
-  min-height: 100vh;
   padding: 0.5rem;
 }
 
