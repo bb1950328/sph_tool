@@ -223,10 +223,12 @@ export default {
   margin-left: 0.5rem;
 }
 
+/*noinspection CssUnusedSymbol*/
 .windage-negative {
   color: blue;
 }
 
+/*noinspection CssUnusedSymbol*/
 .windage-positive {
   color: red;
 }
