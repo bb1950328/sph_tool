@@ -21,31 +21,30 @@
       </div>
     </div>
     <div class="mb-3 row">
-      <div class="col-12">
+      <div class="col-5">
         <label for="windDirectionInput" class="form-label">Windrichtung (Uhr)</label>
-        <input id="windDirectionInput" type="number" class="form-control" v-model="windClock" min="0" max="12">
+        <ClockRadioGroup v-model="windClock"/>
       </div>
-      <!-- TODO add some kind of intuitive round input -->
-    </div>
-    <div class="mb-3 row">
-      <div class="col-4">
-        <label for="airPressureInput" class="form-label">Luftdruck</label>
-        <input id="airPressureInput" type="number" class="form-control" v-model="airPressure">
-      </div>
-      <div class="col-4">
-        <label for="temperatureInput" class="form-label">Temperatur</label>
-        <input id="temperatureInput" type="number" class="form-control" v-model="temperature">
-      </div>
-      <div class="col-4">
-        <label for="barrelGroup" class="form-label">Lauf</label>
-        <div class="btn-group" role="group" aria-label="Lauf" id="barrel-group">
-          <input type="radio" class="btn-check" name="barrel-radio" id="barrel-radio-new" autocomplete="off"
-                 v-model="oldBarrel" v-bind:value="false">
-          <label class="btn btn-outline-primary" for="barrel-radio-new">Neu</label>
+      <div class="col-7">
+        <div class="mb-3">
+          <label for="airPressureInput" class="form-label">Luftdruck</label>
+          <input id="airPressureInput" type="number" class="form-control" v-model="airPressure">
+        </div>
+        <div class="mb-3">
+          <label for="temperatureInput" class="form-label">Temperatur</label>
+          <input id="temperatureInput" type="number" class="form-control" v-model="temperature">
+        </div>
+        <div class="mb-3">
+          <label for="barrelGroup" class="form-label">Lauf</label>
+          <div class="btn-group" role="group" aria-label="Lauf" id="barrel-group">
+            <input type="radio" class="btn-check" name="barrel-radio" id="barrel-radio-new" autocomplete="off"
+                   v-model="oldBarrel" v-bind:value="false">
+            <label class="btn btn-outline-primary" for="barrel-radio-new">Neu</label>
 
-          <input type="radio" class="btn-check" name="barrel-radio" id="barrel-radio-old" autocomplete="off"
-                 v-model="oldBarrel" v-bind:value="true">
-          <label class="btn btn-outline-primary" for="barrel-radio-old">Alt</label>
+            <input type="radio" class="btn-check" name="barrel-radio" id="barrel-radio-old" autocomplete="off"
+                   v-model="oldBarrel" v-bind:value="true">
+            <label class="btn btn-outline-primary" for="barrel-radio-old">Alt</label>
+          </div>
         </div>
       </div>
     </div>
@@ -105,9 +104,13 @@ import {
   GP04_WINDAGE_DERIVATION,
   GP04_WINDAGE_WIND
 } from "@/ballistics_data";
+import ClockRadioGroup from "@/components/ClockRadioGroup";
 
 export default {
   name: "BallisticsCalculator",
+  components: {
+    ClockRadioGroup,
+  },
   data() {
     return {
       distance: parseInt(localStorage.getItem("ballistics_distance")) || 100,
