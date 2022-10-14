@@ -3,46 +3,49 @@
     <div class="mb-3 row">
       <div class="col-9">
         <label for="distance-range-input" class="form-label">Distanz</label>
-        <input id="distance-range-input" type="range" class="form-range" v-model="distance" min="100" max="1200">
+        <input id="distance-range-input" type="range" class="form-range"
+               v-model="situation.distance" min="100" max="1200">
       </div>
       <div class="col-3 double-input-value-container">
         <label for="distance-value-input" class="form-label" hidden>Distanz</label>
-        <input id="distance-value-input" type="number" class="form-control" v-model="distance">
+        <input id="distance-value-input" type="number" class="form-control" v-model="situation.distance">
       </div>
     </div>
     <div class="mb-3 row">
       <div class="col-9">
         <label for="wind-speed-range-input" class="form-label">Windgeschwindigkeit</label>
-        <input id="wind-speed-range-input" type="range" class="form-range" v-model="windSpeed" min="0" max="10">
+        <input id="wind-speed-range-input" type="range" class="form-range"
+               v-model="situation.windSpeed" min="0" max="10">
       </div>
       <div class="col-3 double-input-value-container">
         <label for="wind-speed-value-input" class="form-label" hidden>Windgeschwindigkeit</label>
-        <input id="wind-speed-value-input" class="form-control" type="number" v-model="windSpeed" min="0" max="10">
+        <input id="wind-speed-value-input" class="form-control" type="number"
+               v-model="situation.windSpeed" min="0" max="10">
       </div>
     </div>
     <div class="mb-3 row">
       <div class="col-5">
         <label for="windDirectionInput" class="form-label">Windrichtung (Uhr)</label>
-        <ClockRadioGroup v-model="windClock"/>
+        <ClockRadioGroup v-model="situation.windClock"/>
       </div>
       <div class="col-7">
         <div class="mb-3">
           <label for="airPressureInput" class="form-label">Luftdruck</label>
-          <input id="airPressureInput" type="number" class="form-control" v-model="airPressure">
+          <input id="airPressureInput" type="number" class="form-control" v-model="situation.airPressure">
         </div>
         <div class="mb-3">
           <label for="temperatureInput" class="form-label">Temperatur</label>
-          <input id="temperatureInput" type="number" class="form-control" v-model="temperature">
+          <input id="temperatureInput" type="number" class="form-control" v-model="situation.temperature">
         </div>
         <div class="mb-3">
           <label for="barrelGroup" class="form-label">Lauf</label>
           <div class="btn-group" role="group" aria-label="Lauf" id="barrel-group">
             <input type="radio" class="btn-check" name="barrel-radio" id="barrel-radio-new" autocomplete="off"
-                   v-model="oldBarrel" v-bind:value="false">
+                   v-model="situation.oldBarrel" v-bind:value="false">
             <label class="btn btn-outline-primary" for="barrel-radio-new">Neu</label>
 
             <input type="radio" class="btn-check" name="barrel-radio" id="barrel-radio-old" autocomplete="off"
-                   v-model="oldBarrel" v-bind:value="true">
+                   v-model="situation.oldBarrel" v-bind:value="true">
             <label class="btn btn-outline-primary" for="barrel-radio-old">Alt</label>
           </div>
         </div>
@@ -55,161 +58,95 @@
       <table>
         <tr>
           <td>Distanz</td>
-          <td>{{ formatElevationClicks(resultBaseElevation) }}</td>
+          <td>{{ formatElevationClicks(situation.baseElevation) }}</td>
         </tr>
-        <tr v-show="resultOldBarrelElevationCorrection!==0">
+        <tr v-show="situation.oldBarrelElevationCorrection!==0">
           <td>Alter Lauf</td>
-          <td>{{ formatElevationClicks(resultOldBarrelElevationCorrection) }}</td>
+          <td>{{ formatElevationClicks(situation.oldBarrelElevationCorrection) }}</td>
         </tr>
-        <tr v-show="resultAirPressureElevationCorrection!==0">
+        <tr v-show="situation.airPressureElevationCorrection!==0">
           <td>Luftdruck</td>
-          <td>{{ formatElevationClicks(resultAirPressureElevationCorrection) }}</td>
+          <td>{{ formatElevationClicks(situation.airPressureElevationCorrection) }}</td>
         </tr>
-        <tr v-show="resultTemperatureElevationCorrection!==0">
+        <tr v-show="situation.temperatureElevationCorrection!==0">
           <td>Temperatur</td>
-          <td>{{ formatElevationClicks(resultTemperatureElevationCorrection) }}</td>
+          <td>{{ formatElevationClicks(situation.temperatureElevationCorrection) }}</td>
         </tr>
         <tr class="important-row">
           <td>Höhe</td>
-          <td>{{ formatElevationClicks(totalElevationClicks) }}</td>
+          <td>{{ formatElevationClicks(situation.totalElevation) }}</td>
         </tr>
       </table>
     </div>
     <div class="">
       <table>
-        <tr v-show="resultBaseWindage" :class="windageCssClass(resultBaseWindage)">
+        <tr v-show="situation.baseWindage">
           <td>Wind</td>
-          <td>{{ formatWindageClicks(resultBaseWindage) }}</td>
+          <td :class="windageCssClass(situation.baseWindage)">
+            {{ formatWindageClicks(situation.baseWindage) }}
+          </td>
         </tr>
-        <tr v-show="resultDerivationWindageCorrection" :class="windageCssClass(resultDerivationWindageCorrection)">
+        <tr v-show="situation.derivationWindageCorrection">
           <td>Derivation</td>
-          <td>{{ formatWindageClicks(resultDerivationWindageCorrection) }}</td>
+          <td :class="windageCssClass(situation.derivationWindageCorrection)">
+            {{ formatWindageClicks(situation.derivationWindageCorrection) }}
+          </td>
         </tr>
-        <tr class="important-row" :class="windageCssClass(totalWindageClicks)">
+        <tr class="important-row">
           <td>Seite</td>
-          <td>{{ formatWindageClicks(totalWindageClicks) }}</td>
+          <td :class="windageCssClass(situation.totalWindage)">
+            {{ formatWindageClicks(situation.totalWindage) }}
+          </td>
         </tr>
       </table>
     </div>
   </div>
+
+  <button type="button" class="btn btn-outline-secondary" @click="$refs.clickTable.openModal(this.situation)">
+    <font-awesome-icon icon="fa-solid fa-table-cells"/>
+    Klicktabelle berechnen
+  </button>
+  <ClickTable ref="clickTable"/>
 </template>
 
 <script>
 
 import {
-  GP04_ELEVATION_AIR_PRESSURE_CORRECTION,
-  GP04_ELEVATION_CLICKS,
-  GP04_ELEVATION_OLD_BARREL_CORRECTION,
-  GP04_ELEVATION_TEMPERATURE_CORRECTION,
-  GP04_WINDAGE_DERIVATION,
-  GP04_WINDAGE_WIND
-} from "@/ballistics_data";
+  BallisticSituation,
+  formatElevationClicks,
+  formatWindageClicks,
+  windageCssClass,
+} from "@/ballistic_calculations";
+
 import ClockRadioGroup from "@/components/ClockRadioGroup";
+import ClickTable from "@/components/ClickTable";
+import {reactive} from "vue";
 
 export default {
   name: "BallisticsCalculator",
   components: {
     ClockRadioGroup,
+    ClickTable,
   },
   data() {
+    const ballisticSituation = reactive(new BallisticSituation());
+    ballisticSituation.loadFromLocalStorage();
     return {
-      distance: parseInt(localStorage.getItem("ballistics_distance")) || 100,
-      windSpeed: parseInt(localStorage.getItem("ballistics_windSpeed")) || 0,
-      windClock: parseInt(localStorage.getItem("ballistics_windClock")) || 0,
-      airPressure: parseInt(localStorage.getItem("ballistics_airPressure")) || 950,
-      temperature: parseInt(localStorage.getItem("ballistics_temperature")) || 25,
-      oldBarrel: localStorage.getItem("ballistics_oldBarrel") === "true",
-
-      resultBaseElevation: 0,
-      resultOldBarrelElevationCorrection: 0,
-      resultAirPressureElevationCorrection: 0,
-      resultTemperatureElevationCorrection: 0,
-
-      resultBaseWindage: 0,
-      resultDerivationWindageCorrection: 0,
-    }
-  },
-  computed: {
-    totalElevationClicks() {
-      return this.resultBaseElevation
-          + this.resultOldBarrelElevationCorrection
-          + this.resultAirPressureElevationCorrection
-          + this.resultTemperatureElevationCorrection;
-    },
-    totalWindageClicks() {
-      return this.resultBaseWindage
-          + this.resultDerivationWindageCorrection;
-    },
-    allInputValues() {
-      return [
-        this.distance,
-        this.windSpeed,
-        this.windClock,
-        this.airPressure,
-        this.temperature,
-        this.oldBarrel,
-      ];
+      situation: ballisticSituation,
     }
   },
   watch: {
-    allInputValues() {
-      this.calculateClicks();
-      this.persistInputValues();
+    situation: {
+      deep: true,
+      handler() {
+        this.situation.saveToLocalStorage();
+      }
     },
-  },
-  mounted() {
-    this.calculateClicks();
   },
   methods: {
-    formatElevationClicks(number) {
-      const rounded = Math.round(number);
-      return (rounded < 0 ? "" : "+") + rounded;
-    },
-    formatWindageClicks(clicks) {
-      let word = "";
-      if (clicks < 0) {
-        word = "negativ ";
-      } else if (clicks > 0) {
-        word = "positiv ";
-      }
-      return word + Math.round(Math.abs(clicks));
-    },
-    windageCssClass(windage) {
-      if (windage < 0) {
-        return "windage-negative";
-      } else if (windage > 0) {
-        return "windage-positive";
-      } else {
-        return "";
-      }
-    },
-    calculateClicks() {
-      this.resultBaseElevation = GP04_ELEVATION_CLICKS.getValueLinearInterpolation(this.distance);
-      this.resultOldBarrelElevationCorrection = this.oldBarrel ? GP04_ELEVATION_OLD_BARREL_CORRECTION.getValueLinearInterpolation(this.distance) : 0;
-      this.resultAirPressureElevationCorrection = GP04_ELEVATION_AIR_PRESSURE_CORRECTION.getValueBilinearInterpolation(this.distance, this.airPressure);
-      this.resultTemperatureElevationCorrection = GP04_ELEVATION_TEMPERATURE_CORRECTION.getValueBilinearInterpolation(this.distance, this.temperature);
-
-      let clock0to3;
-      if (this.windClock <= 3) {
-        clock0to3 = this.windClock;
-      } else if (this.windClock <= 6) {
-        clock0to3 = 6 - this.windClock;
-      } else if (this.windClock <= 9) {
-        clock0to3 = this.windClock - 6;
-      } else {
-        clock0to3 = 12 - this.windClock;
-      }
-      this.resultBaseWindage = GP04_WINDAGE_WIND.getValueTrilinearInterpolation(this.distance, clock0to3, this.windSpeed);
-      this.resultDerivationWindageCorrection = GP04_WINDAGE_DERIVATION.getValueLinearInterpolation(this.distance);
-    },
-    persistInputValues() {
-      localStorage.setItem("ballistics_distance", this.distance.toString());
-      localStorage.setItem("ballistics_windSpeed", this.windSpeed.toString());
-      localStorage.setItem("ballistics_windClock", this.windClock.toString());
-      localStorage.setItem("ballistics_airPressure", this.airPressure.toString());
-      localStorage.setItem("ballistics_temperature", this.temperature.toString());
-      localStorage.setItem("ballistics_oldBarrel", this.oldBarrel.toString());
-    },
+    formatElevationClicks: formatElevationClicks,
+    formatWindageClicks: formatWindageClicks,
+    windageCssClass: windageCssClass,
   }
 }
 </script>
@@ -231,16 +168,6 @@ export default {
 
 #clicks-result td:not(:first-child) {
   margin-left: 0.5rem;
-}
-
-/*noinspection CssUnusedSymbol*/
-.windage-negative {
-  color: blue;
-}
-
-/*noinspection CssUnusedSymbol*/
-.windage-positive {
-  color: red;
 }
 
 #barrel-group {

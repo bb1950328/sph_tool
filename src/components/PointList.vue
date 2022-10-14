@@ -35,7 +35,7 @@
         <div class="modal-header">
           <h5 class="modal-title">Punkt {{ currentlyEditingNr }} bearbeiten</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
+            <span aria-hidden="true" hidden>&times;</span>
           </button>
         </div>
         <div class="modal-body">
@@ -139,7 +139,8 @@ export default {
       if (z) {
         document.getElementById("modalInputZ").value = formatCoordinateZValue(z);
       }
-    }, openModal(nr) {
+    },
+    openModal(nr) {
       this.currentlyEditingNr = nr;
       let point = this.allPoints[this.currentlyEditingNr];
       document.getElementById("modalInputDescription").value = point["description"];
