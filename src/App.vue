@@ -11,6 +11,7 @@
 import PointList from "@/components/PointList";
 import CoordinateCalculations from "@/components/CoordinateCalculations";
 import BallisticsCalculator from "@/components/BallisticsCalculator";
+import CameraGonio from "@/components/CameraGonio";
 
 export default {
   name: 'App',
@@ -18,6 +19,7 @@ export default {
     PointList,
     CoordinateCalculations,
     BallisticsCalculator,
+    CameraGonio,
   },
   data() {
     let currentTool = "PointList";
@@ -25,6 +27,7 @@ export default {
       ["PointList", "Punkteliste"],
       ["CoordinateCalculations", "Koordinatenberechnungen"],
       ["BallisticsCalculator", "Ballistikrechner"],
+      ["CameraGonio", "Gonio"],
     ];
     if (window.location.hash) {
       for (let i = 0; i < allTools.length; i++) {
