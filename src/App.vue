@@ -11,6 +11,7 @@
 import PointList from "@/components/PointList";
 import CoordinateCalculations from "@/components/CoordinateCalculations";
 import BallisticsCalculator from "@/components/BallisticsCalculator";
+import MapView from "@/components/MapView.vue";
 
 export default {
   name: 'App',
@@ -18,6 +19,7 @@ export default {
     PointList,
     CoordinateCalculations,
     BallisticsCalculator,
+    MapView,
   },
   data() {
     let currentTool = "PointList";
@@ -25,6 +27,7 @@ export default {
       ["PointList", "Punkteliste"],
       ["CoordinateCalculations", "Koordinatenberechnungen"],
       ["BallisticsCalculator", "Ballistikrechner"],
+      ["MapView", "Karte"],
     ];
     if (window.location.hash) {
       for (let i = 0; i < allTools.length; i++) {
@@ -75,6 +78,7 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   padding: 0.5rem;
+  min-height: 100vh;
 }
 
 #nav-select {
