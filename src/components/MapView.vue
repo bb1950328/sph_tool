@@ -9,18 +9,27 @@
         </button>
         <ul class="dropdown-menu" aria-labelledby="map-type-drop">
           <li>
-            <button class="dropdown-item" @click="setActiveMapLayer('osm')" :class="{'active': activeMapLayer==='osm'}">
+            <button class="dropdown-item" @click="setActiveMapLayer('osm')"
+                    :class="{'active': activeMapLayer==='osm'}">
               OSM
             </button>
           </li>
           <li>
             <button class="dropdown-item" @click="setActiveMapLayer('pixel')"
-                    :class="{'active': activeMapLayer==='pixel'}">SwissTopo Pixel
+                    :class="{'active': activeMapLayer==='pixel'}">
+              SwissTopo Pixel
             </button>
           </li>
           <li>
             <button class="dropdown-item" @click="setActiveMapLayer('vector')"
-                    :class="{'active': activeMapLayer==='vector'}">SwissTopo Vektor
+                    :class="{'active': activeMapLayer==='vector'}">
+              SwissTopo Vektor
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item" @click="setActiveMapLayer('satellite')"
+                    :class="{'active': activeMapLayer==='satellite'}">
+              SwissTopo Satellit
             </button>
           </li>
         </ul>
@@ -42,8 +51,10 @@ import {apply, applyStyle} from 'ol-mapbox-style';
 import {transform as proj_transform} from "ol/proj";
 import {defaults as control_defaults} from "ol/control";
 import LayerGroup from "ol/layer/Group";
+import {Tile} from "ol/layer";
 
-const XYZ_URL = "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg";
+const PIXEL_URL = "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg";
+const SATELLITE_URL = "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg"
 const VECTOR_STYLE_URL = "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json";
 const VECTOR_TILE_URL = "https://vectortiles.geo.admin.ch/tiles/ch.swisstopo.leichte-basiskarte.vt/v2.0.0/{z}/{x}/{y}.pbf";
 export default {
@@ -81,8 +92,19 @@ export default {
 
     this.mapLayers.pixel = new TileLayer({
       source: new XYZ({
-        url: XYZ_URL,
+        url: PIXEL_URL,
       }),
+    });
+
+    this.mapLayers.satellite = new LayerGroup({
+      layers: [
+        new Tile({
+          source: new XYZ({
+            url: SATELLITE_URL,
+          }),
+        }),
+        //todo add street and city names from somewhere
+      ],
     });
 
     this.map = new Map({
