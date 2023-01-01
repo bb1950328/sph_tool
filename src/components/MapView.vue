@@ -26,7 +26,7 @@ import Map from 'ol/Map'
 import TileLayer from 'ol/layer/Tile'
 import OSM from 'ol/source/OSM'
 import VectorTileLayer from "ol/layer/VectorTile";
-import {VectorTile, XYZ} from "ol/source";
+import {Vector, VectorTile, XYZ} from "ol/source";
 
 import {MVT} from "ol/format";
 import {apply, applyStyle} from 'ol-mapbox-style';
@@ -34,6 +34,14 @@ import {transform as proj_transform} from "ol/proj";
 import {defaults as control_defaults} from "ol/control";
 import LayerGroup from "ol/layer/Group";
 import {Tile} from "ol/layer";
+import {Vector as layer_Vector} from "ol/layer";
+import {Feature} from "ol";
+import {Point} from "ol/geom";
+import {Circle, Fill, Stroke, Style} from "ol/style";
+import {Text as style_Text} from "ol/style"
+import {watch} from "vue";
+import {allPoints} from "@/points_list";
+import {LV03toWGS84} from "@/util";
 
 const PIXEL_URL = "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg";
 const SATELLITE_URL = "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg"
@@ -97,10 +105,55 @@ export default {
       ],
     });
 
+    let vectorSource = new Vector({
+      features: [],
+    });
+    const updatePoints = () => {
+      vectorSource.clear();
+      Object.keys(allPoints).map(id => allPoints[id]).forEach(pt => {
+        const [wLat, wLon, _] = LV03toWGS84(pt.coordinates.x, pt.coordinates.y, pt.coordinates.z);
+        vectorSource.addFeature(new Feature({
+          name: pt.description,
+          geometry: new Point(proj_transform([wLon, wLat], "EPSG:4326", "EPSG:3857")),
+        }));
+      });
+    };
+    updatePoints();
+    watch(allPoints, updatePoints);
+
+    const styleFunc = (feature) => [
+      new Style({
+        image: new Circle({
+          radius: 10,
+          fill: new Fill({
+            color: "#ff8400",
+          }),
+        }),
+        text: new style_Text({
+          font: '1.5rem Avenir,sans-serif',
+          fill: new Fill({
+            color: '#ff8400'
+          }),
+          stroke: new Stroke({
+            color: '#fff',
+            width: 4
+          }),
+          offsetY: -18,
+          text: feature.get("name"),
+        }),
+      }),
+    ];
+
+    let featuresLayer = new layer_Vector({
+      source: vectorSource,
+      style: styleFunc,
+    });
+    featuresLayer.setZIndex(100);
     this.map = new Map({
       target: this.$refs.map_root,
       layers: [
         this.mapLayers[this.activeMapLayer],
+        featuresLayer,
       ],
       view: new View({
         zoom: 12,

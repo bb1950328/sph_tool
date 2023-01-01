@@ -3,7 +3,7 @@
     <option v-for="to in allTools" :key="to[0]" :value="to[0]">{{ to[1] }}</option>
   </select>
   <KeepAlive>
-    <component :is="currentTool"></component>
+    <component :is="currentTool" :key="currentTool"></component>
   </KeepAlive>
 </template>
 
