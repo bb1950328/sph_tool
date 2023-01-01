@@ -8,28 +8,10 @@
           <font-awesome-icon icon="fa-solid fa-layer-group"/>
         </button>
         <ul class="dropdown-menu" aria-labelledby="map-type-drop">
-          <li>
-            <button class="dropdown-item" @click="setActiveMapLayer('osm')"
-                    :class="{'active': activeMapLayer==='osm'}">
-              OSM
-            </button>
-          </li>
-          <li>
-            <button class="dropdown-item" @click="setActiveMapLayer('pixel')"
-                    :class="{'active': activeMapLayer==='pixel'}">
-              SwissTopo Pixel
-            </button>
-          </li>
-          <li>
-            <button class="dropdown-item" @click="setActiveMapLayer('vector')"
-                    :class="{'active': activeMapLayer==='vector'}">
-              SwissTopo Vektor
-            </button>
-          </li>
-          <li>
-            <button class="dropdown-item" @click="setActiveMapLayer('satellite')"
-                    :class="{'active': activeMapLayer==='satellite'}">
-              SwissTopo Satellit
+          <li v-for="row in mapLayerNames" :key="row.id">
+            <button class="dropdown-item" @click="setActiveMapLayer(row.id)"
+                    :class="{'active': activeMapLayer===row.id}">
+              {{ row.displayName }}
             </button>
           </li>
         </ul>
@@ -57,6 +39,8 @@ const PIXEL_URL = "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe
 const SATELLITE_URL = "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg"
 const VECTOR_STYLE_URL = "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json";
 const VECTOR_TILE_URL = "https://vectortiles.geo.admin.ch/tiles/ch.swisstopo.leichte-basiskarte.vt/v2.0.0/{z}/{x}/{y}.pbf";
+
+
 export default {
   name: "MapView",
   components: {},
@@ -65,9 +49,15 @@ export default {
   data() {
     let activeMapLayer = "pixel";
     return {
-      "mapLayers": {},
-      "activeMapLayer": activeMapLayer,
-      "map": null,
+      mapLayers: {},
+      activeMapLayer: activeMapLayer,
+      map: null,
+      mapLayerNames: [
+        {"id": "osm", "displayName": "OpenStreetMap"},
+        {"id": "pixel", "displayName": "SwissTopo Pixel"},
+        {"id": "vector", "displayName": "SwissTopo Vektor"},
+        {"id": "satellite", "displayName": "SwissTopo Satellit"},
+      ],
     };
   },
   async mounted() {
