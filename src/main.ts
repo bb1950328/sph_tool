@@ -10,10 +10,11 @@ import {
     faMapLocationDot,
     faLocationCrosshairs,
     faPaste,
-    faTableCells
+    faTableCells,
+    faLayerGroup,
 } from "@fortawesome/free-solid-svg-icons";
 
-library.add(faPen, faTrashCan, faPlus, faMapLocationDot, faLocationCrosshairs, faPaste, faTableCells);
+library.add(faPen, faTrashCan, faPlus, faMapLocationDot, faLocationCrosshairs, faPaste, faTableCells, faLayerGroup);
 
 import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap"
