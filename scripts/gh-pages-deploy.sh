@@ -1,22 +1,29 @@
 #!/usr/bin/env bash
 
-BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-
-git checkout --orphan gh-pages
+GITHUB_URL=$(git config --get remote.origin.url)
 
 npm run build
-
 if [ -d "dist" ]; then
   DIR=dist
 else
   DIR=build
 fi
+BUILD_OUTPUT_DIR="$(pwd)/$DIR"
 
-git --work-tree $DIR add --all
-git --work-tree $DIR commit -m "gh-pages"
-git push origin HEAD:gh-pages --force
+mkdir /tmp/gh-pages-build
+pushd /tmp/gh-pages-build || exit
+git clone --single-branch --branch gh-pages "$GITHUB_URL"
+pushd sph_tool || exit
 
-rm -r $DIR
+rm -rf ./*
+cp -R "$BUILD_OUTPUT_DIR/." .
 
-git checkout -f "$BRANCH_NAME"
-git branch -D gh-pages
+git status
+
+git add .
+git commit -m "gh-pages"
+git push --force
+
+popd || exit
+popd || exit
+rm -rf /tmp/gh-pages-build
