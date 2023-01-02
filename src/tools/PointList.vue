@@ -19,12 +19,14 @@
         <td>{{ pt.description }}</td>
         <td>{{ formatCoordinates(pt.coordinates) }}</td>
         <td>
-          <button type="button" class="btn btn-outline-secondary btn-sm edit-point-button" @click="openModal(nr)">
-            <font-awesome-icon icon="fa-solid fa-pen"/>
-          </button>
-          <button type="button" class="btn btn-outline-danger btn-sm delete-point-button" @click="removePoint(nr)">
-            <font-awesome-icon icon="fa-solid fa-trash-can"/>
-          </button>
+          <div class="btn-group" role="group" aria-label="Aktionen">
+            <button type="button" class="btn btn-outline-secondary btn-sm edit-point-button" @click="openModal(nr)">
+              <font-awesome-icon icon="fa-solid fa-pen"/>
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm delete-point-button" @click="removePoint(nr)">
+              <font-awesome-icon icon="fa-solid fa-trash-can"/>
+            </button>
+          </div>
         </td>
       </tr>
       </tbody>
@@ -218,10 +220,6 @@ export default {
 
 #modalGPSandSwissTopoBtnGroup button:not(:first-child) {
   margin-left: 0.2rem;
-}
-
-.edit-point-button {
-  margin-right: 0.25rem;
 }
 
 #app > table {

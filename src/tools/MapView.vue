@@ -1,5 +1,29 @@
 <template>
   <div ref="map_root" id="map-root"></div>
+  <div id="popup-root" class="ol-popup" :class="{'shown': overlayShowing}" ref="popupContainer">
+    <a id="popup-closer" class="ol-popup-closer" @click="overlayShowing=false">
+      <font-awesome-icon icon="fa-solid fa-xmark"/>
+    </a>
+    <div class="popup-content" :class="{'shown': overlayType===OVERLAY_TYPE_POINT}" ref="popupContentPoint">
+      <h4>{{ currentOverlayPoint?.description }}</h4>
+      <table>
+        <tr>
+          <th scope="row">LV03:</th>
+          <td>{{ currentOverlayPoint ? formatCoordinates(currentOverlayPoint.coordinates) : "" }}</td>
+        </tr>
+        <!-- TODO show point in other coordinate systems here-->
+      </table>
+      <div class="btn-group btn-group-sm" role="group">
+        <button class="btn btn-outline-primary">
+          <!-- TODO click handler that opens edit window-->
+          <font-awesome-icon icon="fa-solid fa-pen"/>
+        </button>
+        <button class="btn btn-outline-danger">
+          <font-awesome-icon icon="fa-solid fa-trash-can"/>
+        </button>
+      </div>
+    </div>
+  </div>
   <div id="map-controls">
     <div class="btn-group-vertical" role="group">
       <div class="btn-group dropstart" role="group">
@@ -35,23 +59,27 @@ import {defaults as control_defaults} from "ol/control";
 import LayerGroup from "ol/layer/Group";
 import {Tile} from "ol/layer";
 import {Vector as layer_Vector} from "ol/layer";
-import {Feature} from "ol";
+import {Feature, Overlay} from "ol";
 import {Point} from "ol/geom";
 import {Circle, Fill, Stroke, Style} from "ol/style";
 import {Text as style_Text} from "ol/style"
 import {watch} from "vue";
 import {allPoints} from "@/points_list";
-import {LV03toWGS84} from "@/util";
+import {formatCoordinates, LV03toWGS84, WGS84toLV03} from "@/util";
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 
 const PIXEL_URL = "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg";
 const SATELLITE_URL = "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg"
 const VECTOR_STYLE_URL = "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.leichte-basiskarte.vt/style.json";
 const VECTOR_TILE_URL = "https://vectortiles.geo.admin.ch/tiles/ch.swisstopo.leichte-basiskarte.vt/v2.0.0/{z}/{x}/{y}.pbf";
 
+const FEATURE_TYPE_POINT = "POINT";
+
+const OVERLAY_TYPE_POINT = "POINT";
 
 export default {
   name: "MapView",
-  components: {},
+  components: {FontAwesomeIcon},
   props: {},
 
   data() {
@@ -59,13 +87,19 @@ export default {
     return {
       mapLayers: {},
       activeMapLayer: activeMapLayer,
+      overlay: null,
+      overlayType: null,
+      currentOverlayPoint: null,
       map: null,
+      overlayShowing: false,
       mapLayerNames: [
         {"id": "osm", "displayName": "OpenStreetMap"},
         {"id": "pixel", "displayName": "SwissTopo Pixel"},
         {"id": "vector", "displayName": "SwissTopo Vektor"},
         {"id": "satellite", "displayName": "SwissTopo Satellit"},
       ],
+
+      OVERLAY_TYPE_POINT,
     };
   },
   async mounted() {
@@ -110,11 +144,14 @@ export default {
     });
     const updatePoints = () => {
       vectorSource.clear();
-      Object.keys(allPoints).map(id => allPoints[id]).forEach(pt => {
+      Object.keys(allPoints).forEach(id => {
+        const pt = allPoints[id];
         const [wLat, wLon, _] = LV03toWGS84(pt.coordinates.x, pt.coordinates.y, pt.coordinates.z);
         vectorSource.addFeature(new Feature({
           name: pt.description,
           geometry: new Point(proj_transform([wLon, wLat], "EPSG:4326", "EPSG:3857")),
+          type: FEATURE_TYPE_POINT,
+          pointId: id,
         }));
       });
     };
@@ -149,6 +186,14 @@ export default {
       style: styleFunc,
     });
     featuresLayer.setZIndex(100);
+    this.overlay = new Overlay({
+      element: this.$refs.popupContainer,
+      autoPan: {
+        animation: {
+          duration: 250,
+        },
+      },
+    });
     this.map = new Map({
       target: this.$refs.map_root,
       layers: [
@@ -169,6 +214,23 @@ export default {
         zoom: false,
         rotate: false,
       }),
+      overlays: [
+        this.overlay,
+      ],
+    });
+
+    this.map.on("singleclick", (evt) => {
+      const coordinate = evt.coordinate;
+      this.map.forEachFeatureAtPixel(evt.pixel, (feature, source) => {
+        if (feature.get("type") === FEATURE_TYPE_POINT) {
+          this.showPointInOverlay(evt.coordinate, feature.get("pointId"));
+          return true;
+        }
+      });
+
+      const [lon, lat] = proj_transform(coordinate, 'EPSG:3857', 'EPSG:4326')
+      const [x, y, _] = WGS84toLV03(lat, lon, null);
+      console.log(x, y);
     });
 
     navigator.geolocation.getCurrentPosition(position => {
@@ -186,10 +248,20 @@ export default {
     );
   },
   methods: {
+    formatCoordinates,
     setActiveMapLayer(newMapLayer) {
       this.map.removeLayer(this.mapLayers[this.activeMapLayer]);
       this.map.addLayer(this.mapLayers[newMapLayer]);
       this.activeMapLayer = newMapLayer;
+    },
+    showPointInOverlay(olCoordinate, pointId) {
+      const point = allPoints[pointId];
+      const [lat, lon, _] = LV03toWGS84(point.coordinates.x, point.coordinates.y, point.coordinates.z);
+      olCoordinate = proj_transform([lon, lat], "EPSG:4326", 'EPSG:3857');
+      this.currentOverlayPoint = point;
+      this.overlayShowing = true;
+      this.overlayType = OVERLAY_TYPE_POINT;
+      this.overlay.setPosition(olCoordinate);
     }
   }
 }
@@ -200,9 +272,59 @@ export default {
   width: 100%;
   height: 100vh;
 }
+
 #map-controls {
   position: absolute;
   bottom: 1rem;
   right: 1rem;
+}
+
+.ol-popup {
+  position: absolute;
+  background-color: var(--bs-body-bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 10px;
+  bottom: 12px;
+  left: -50px;
+  min-width: 280px;
+  display: none;
+}
+
+.ol-popup.shown,
+.popup-content.shown {
+  display: initial;
+}
+
+.ol-popup:after, .ol-popup:before {
+  top: 100%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+.ol-popup:after {
+  border-top-color: var(--bs-body-bg);
+  border-width: 10px;
+  left: 48px;
+  margin-left: -10px;
+}
+
+.ol-popup:before {
+  border-top-color: var(--bs-body-bg);
+  border-width: 11px;
+  left: 48px;
+  margin-left: -11px;
+}
+
+.ol-popup-closer {
+  text-decoration: none;
+  position: absolute;
+  top: 2px;
+  right: 8px;
+  color: var(--bs-danger-text);
 }
 </style>
