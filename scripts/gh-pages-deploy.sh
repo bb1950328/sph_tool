@@ -10,6 +10,7 @@ else
 fi
 BUILD_OUTPUT_DIR="$(pwd)/$DIR"
 
+rm -rf /tmp/gh-pages-build # in case the previous run didn't finish
 mkdir /tmp/gh-pages-build
 pushd /tmp/gh-pages-build || exit
 git clone --single-branch --branch gh-pages "$GITHUB_URL"
