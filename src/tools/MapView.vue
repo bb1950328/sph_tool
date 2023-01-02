@@ -198,12 +198,11 @@ export default {
 <style scoped>
 #map-root {
   width: 100%;
-  height: calc(100vh - 4.5rem);
+  height: 100vh;
 }
-
 #map-controls {
   position: absolute;
-  top: 6rem;
+  bottom: 1rem;
   right: 1rem;
 }
 </style>

@@ -1,87 +1,89 @@
 <template>
-  <button type="button" class="btn btn-primary" @click="newPoint()">
-    <font-awesome-icon icon="fa-solid fa-plus"/>
-    Neuer Punkt
-  </button>
-  <table class="table table-striped table-bordered table-dark table-sm">
-    <thead>
-    <tr>
-      <th scope="col">Nr</th>
-      <th scope="col">Bezeichnung</th>
-      <th scope="col">Koordinaten</th>
-      <th scope="col"></th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr v-for="(pt, nr) in allPoints" :key="nr">
-      <th scope="row">{{ nr }}</th>
-      <td>{{ pt.description }}</td>
-      <td>{{ formatCoordinates(pt.coordinates) }}</td>
-      <td>
-        <button type="button" class="btn btn-outline-secondary btn-sm edit-point-button" @click="openModal(nr)">
-          <font-awesome-icon icon="fa-solid fa-pen"/>
-        </button>
-        <button type="button" class="btn btn-outline-danger btn-sm delete-point-button" @click="removePoint(nr)">
-          <font-awesome-icon icon="fa-solid fa-trash-can"/>
-        </button>
-      </td>
-    </tr>
-    </tbody>
-  </table>
-
-  <div class="modal" tabindex="-1" role="dialog" id="pointEditModal">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Punkt {{ currentlyEditingNr }} bearbeiten</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true" hidden>&times;</span>
+  <div class="p-2">
+    <button type="button" class="btn btn-primary" @click="newPoint()">
+      <font-awesome-icon icon="fa-solid fa-plus"/>
+      Neuer Punkt
+    </button>
+    <table class="table table-striped table-bordered table-sm mt-2">
+      <thead>
+      <tr>
+        <th scope="col">Nr</th>
+        <th scope="col">Bezeichnung</th>
+        <th scope="col">Koordinaten</th>
+        <th scope="col"></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="(pt, nr) in allPoints" :key="nr">
+        <th scope="row">{{ nr }}</th>
+        <td>{{ pt.description }}</td>
+        <td>{{ formatCoordinates(pt.coordinates) }}</td>
+        <td>
+          <button type="button" class="btn btn-outline-secondary btn-sm edit-point-button" @click="openModal(nr)">
+            <font-awesome-icon icon="fa-solid fa-pen"/>
           </button>
-        </div>
-        <div class="modal-body">
-          <form>
-            <div class="mb-3">
-              <label for="modalInputDescription" class="form-label">Beschreibung</label>
-              <input type="text" class="form-control" id="modalInputDescription">
-            </div>
-            <label for="modalInputCoordinateGroup" class="form-label">Koordinaten</label>
-            <div class="input-group" id="modalInputCoordinateGroup">
-              <input v-mask="'### ###'" class="form-control" placeholder="X" id="modalInputX">
-              <div class="input-group-prepend">
-                <span class="input-group-text">/</span>
+          <button type="button" class="btn btn-outline-danger btn-sm delete-point-button" @click="removePoint(nr)">
+            <font-awesome-icon icon="fa-solid fa-trash-can"/>
+          </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <div class="modal" tabindex="-1" role="dialog" id="pointEditModal">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Punkt {{ currentlyEditingNr }} bearbeiten</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true" hidden>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="mb-3">
+                <label for="modalInputDescription" class="form-label">Beschreibung</label>
+                <input type="text" class="form-control" id="modalInputDescription">
               </div>
-              <input v-mask="'### ###'" class="form-control" placeholder="Y" id="modalInputY">
-              <div class="input-group-prepend">
-                <span class="input-group-text">/</span>
+              <label for="modalInputCoordinateGroup" class="form-label">Koordinaten</label>
+              <div class="input-group" id="modalInputCoordinateGroup">
+                <input v-mask="'### ###'" class="form-control" placeholder="X" id="modalInputX">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">/</span>
+                </div>
+                <input v-mask="'### ###'" class="form-control" placeholder="Y" id="modalInputY">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">/</span>
+                </div>
+                <input v-mask="'####'" class="form-control" placeholder="H" id="modalInputZ">
               </div>
-              <input v-mask="'####'" class="form-control" placeholder="H" id="modalInputZ">
-            </div>
-            <div class="" role="group" id="modalGPSandSwissTopoBtnGroup">
-              <button type="button" class="btn btn-sm btn-secondary" @click="insertXYfromGPSinModal()">
-                X/Y
-                <font-awesome-icon icon="fa-solid fa-location-crosshairs"/>
-                GPS
-              </button>
-              <button type="button" class="btn btn-sm btn-secondary" @click="insertHfromGPSinModal()">
-                H
-                <font-awesome-icon icon="fa-solid fa-location-crosshairs"/>
-                GPS
-              </button>
-              <button type="button" class="btn btn-sm btn-secondary" @click="insertHfromSwissTopoInModal()">
-                H
-                <font-awesome-icon icon="fa-solid fa-map-location-dot"/>
-                SwissTopo
-              </button>
-              <button type="button" class="btn btn-sm btn-secondary" @click="pasteIntoModal()">
-                <font-awesome-icon icon="fa-solid fa-paste"/>
-                Paste
-              </button>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" @click="saveChangesFromModal()">Speichern</button>
-          <button type="button" class="btn btn-secondary" @click="closeModal()">Abbrechen</button>
+              <div class="" role="group" id="modalGPSandSwissTopoBtnGroup">
+                <button type="button" class="btn btn-sm btn-secondary" @click="insertXYfromGPSinModal()">
+                  X/Y
+                  <font-awesome-icon icon="fa-solid fa-location-crosshairs"/>
+                  GPS
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" @click="insertHfromGPSinModal()">
+                  H
+                  <font-awesome-icon icon="fa-solid fa-location-crosshairs"/>
+                  GPS
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" @click="insertHfromSwissTopoInModal()">
+                  H
+                  <font-awesome-icon icon="fa-solid fa-map-location-dot"/>
+                  SwissTopo
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" @click="pasteIntoModal()">
+                  <font-awesome-icon icon="fa-solid fa-paste"/>
+                  Paste
+                </button>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" @click="saveChangesFromModal()">Speichern</button>
+            <button type="button" class="btn btn-secondary" @click="closeModal()">Abbrechen</button>
+          </div>
         </div>
       </div>
     </div>

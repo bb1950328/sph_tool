@@ -1,73 +1,25 @@
 <template>
-  <select @change="changeTool($event.target.value)" class="form-select" id="nav-select" v-model="currentTool">
-    <option v-for="to in allTools" :key="to[0]" :value="to[0]">{{ to[1] }}</option>
-  </select>
-  <KeepAlive>
-    <component :is="currentTool" :key="currentTool"></component>
-  </KeepAlive>
+  <NavBar/>
+  <router-view></router-view>
 </template>
 
 <script>
-import PointList from "@/components/PointList";
-import CoordinateCalculations from "@/components/CoordinateCalculations";
-import BallisticsCalculator from "@/components/BallisticsCalculator";
-import MapView from "@/components/MapView.vue";
+import PointList from "@/tools/PointList.vue";
+import CoordinateCalculations from "@/tools/CoordinateCalculations.vue";
+import BallisticsCalculator from "@/tools/BallisticsCalculator.vue";
+import MapView from "@/tools/MapView.vue";
+import NavBar from "@/components/NavBar.vue";
 
 export default {
   name: 'App',
-  components: {
-    PointList,
-    CoordinateCalculations,
-    BallisticsCalculator,
-    MapView,
-  },
+  components: {NavBar},
   data() {
-    let currentTool = "PointList";
-    let allTools = [
-      ["PointList", "Punkteliste"],
-      ["CoordinateCalculations", "Koordinatenberechnungen"],
-      ["BallisticsCalculator", "Ballistikrechner"],
-      ["MapView", "Karte"],
-    ];
-    if (window.location.hash) {
-      for (let i = 0; i < allTools.length; i++) {
-        let fragment = window.location.hash.slice(1);
-        if (allTools[i][0] === fragment) {
-          currentTool = fragment;
-          break;
-        }
-      }
-    }
-    return {
-      currentTool: currentTool,
-      allTools: allTools,
-    }
+    return {}
   },
   mounted() {
-    this.updateDocumentTitle(this.currentTool);
-    document.body.setAttribute("data-bs-theme","dark");
+
   },
   methods: {
-    updateDocumentTitle(newTool) {
-      document.title = "sph_tool - " + this.getToolDisplayName(newTool);
-    },
-    changeTool(newTool) {
-      this.currentTool = newTool;
-      if (history.pushState) {
-        history.pushState(null, null, "#" + newTool);
-      } else {
-        location.hash = "#" + newTool;
-      }
-      this.updateDocumentTitle(newTool);
-    },
-    getToolDisplayName(toolInternalName) {
-      for (let i = 0; i < this.allTools.length; i++) {
-        if (toolInternalName === this.allTools[i][0]) {
-          return this.allTools[i][1];
-        }
-      }
-      return null;
-    }
   },
 }
 </script>
@@ -78,11 +30,6 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  padding: 0.5rem;
   min-height: 100vh;
-}
-
-#nav-select {
-  margin-bottom: 1rem;
 }
 </style>
