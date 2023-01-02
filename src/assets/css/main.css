@@ -7,3 +7,7 @@
 .windage-positive {
     color: red;
 }
+
+[data-bs-theme=dark] {
+    --bs-form-control-bg: var(--bs-body-bg);
+}

@@ -45,6 +45,7 @@ export default {
   },
   mounted() {
     this.updateDocumentTitle(this.currentTool);
+    document.body.setAttribute("data-bs-theme","dark");
   },
   methods: {
     updateDocumentTitle(newTool) {

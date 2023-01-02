@@ -1,5 +1,5 @@
 <template>
-  <div id="wrapper">
+  <div id="wrapper" class="btn-outline-primary">
     <input type="radio" name="clock-radio" id="clock-1" autocomplete="off" v-model="internalValue" v-bind:value="1">
     <label for="clock-1"><span><span @click="setVal(1)">1</span></span></label>
     <input type="radio" name="clock-radio" id="clock-2" autocomplete="off" v-model="internalValue" v-bind:value="2">
@@ -73,12 +73,12 @@ export default {
   position: absolute;
   top: 2rem;
   left: 2rem;
-  background-color: #fff;
+  background-color: var(--bs-body-bg);
 }
 
 #wrapper, #wrapper::after {
   border-radius: 50%;
-  border: #0d6efd solid 1px;
+  border: var(--bs-btn-border-color) solid 1px;
 }
 
 #wrapper label {
@@ -88,7 +88,7 @@ export default {
   width: 2rem;
   height: 2rem;
   transform-origin: center 5rem 4.5rem;
-  color: #0d6efd;
+  color: var(--bs-btn-border-color);
 }
 
 label > span {
@@ -111,7 +111,7 @@ label::before {
   height: 2rem;
   transform: rotate(-15deg);
   transform-origin: center 5rem 5rem;
-  border-left: #0d6efd solid 1px;
+  border-left: var(--bs-btn-border-color) solid 1px;
   position: absolute;
   top: 0;
   left: 1rem;
@@ -121,7 +121,7 @@ label::before {
   content: "";
   width: 5rem;
   height: 5rem;
-  background-color: #0d6efd;
+  background-color: var(--bs-btn-active-bg);
   position: absolute;
   left: 5rem;
   top: 0;
