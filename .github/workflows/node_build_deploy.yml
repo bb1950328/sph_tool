@@ -19,7 +19,7 @@ jobs:
       run: npm install
     - name: Globally configure git user
       run: |
-        git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-        git config --global user.name "${GITHUB_ACTOR}"
+        git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
+        git config --global user.name "$GITHUB_ACTOR"
     - name: Run deployment script
       run: scripts/gh-pages-deploy.sh
