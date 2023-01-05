@@ -41,5 +41,7 @@ export default {
 </script>
 
 <style scoped>
-
+#offcanvas-navbar {
+  --bs-offcanvas-width: 15rem;
+}
 </style>

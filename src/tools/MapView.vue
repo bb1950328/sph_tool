@@ -4,27 +4,47 @@
     <a id="popup-closer" class="ol-popup-closer" @click="overlayShowing=false">
       <font-awesome-icon icon="fa-solid fa-xmark"/>
     </a>
-    <div class="popup-content" v-if="currentOverlayPoint!=null" ref="popupContentPoint">
-      <MapPopupPointInfo :coordinates="currentOverlayPoint"
-                         :title="currentOverlayPoint?.description"/>
+    <div class="popup-content" ref="popupContentPoint">
+      <MapPopupPointInfo :coordinates="currentOverlayPoint.coordinates"
+                         :title="currentOverlayPoint?.description"
+                         v-if="currentOverlayPoint!=null"/>
+      <MapPopupPointInfo :coordinates="temporaryPointCoordinates"
+                         title="Temporärer Punkt"
+                         v-if="temporaryPointCoordinates!=null"/>
       <div class="btn-group btn-group-sm" role="group">
-        <button class="btn btn-outline-primary">
+        <button v-if="currentOverlayPoint!=null" class="btn btn-primary">
           <!-- TODO click handler that opens edit window-->
           <font-awesome-icon icon="fa-solid fa-pen"/>
         </button>
-        <button class="btn btn-outline-danger">
+        <button v-if="currentOverlayPoint!=null" class="btn btn-danger">
           <font-awesome-icon icon="fa-solid fa-trash-can"/>
         </button>
-      </div>
-    </div>
-    <div class="popup-content" v-if="temporaryPointCoordinates!=null" ref="popupContentTemporary">
-      <MapPopupPointInfo :coordinates="temporaryPointCoordinates"
-                         title="Temporärer Punkt"/>
-      <div class="btn-group btn-group-sm" role="group">
-        <button class="btn btn-outline-primary">
+
+        <button v-if="temporaryPointCoordinates!=null" class="btn btn-primary">
           <!-- TODO click handler that opens create window-->
           <font-awesome-icon icon="fa-solid fa-floppy-disk"/>
         </button>
+
+        <div class="btn-group" role="group">
+          <button id="openInDropdown" type="button" class="btn btn-secondary dropdown-toggle"
+                  data-bs-toggle="dropdown" aria-expanded="false">
+            Öffnen in
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="openInDropdown" v-if="currentPopupPointCoordinates!=null">
+            <li>
+              <a class="dropdown-item" target="_blank"
+                 :href="createSwissTopoLink(currentPopupPointCoordinates, currentMapZoom)">
+                SwissTopo
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" target="_blank"
+                 :href="createGoogleMapsLink(LV03toWGS84(currentPopupPointCoordinates), currentMapZoom)">
+                Google Maps
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -67,7 +87,14 @@ import {Point} from "ol/geom";
 import {Circle, Fill, Stroke, Style, Text as style_Text} from "ol/style";
 import {watch} from "vue";
 import {allPoints} from "@/points_list";
-import {formatCoordinatesLV03, getHeightFromSwissTopo, LV03toWGS84, WGS84toLV03} from "@/util";
+import {
+  createGoogleMapsLink,
+  createSwissTopoLink,
+  formatCoordinatesLV03,
+  getHeightFromSwissTopo,
+  LV03toWGS84,
+  WGS84toLV03,
+} from "@/util";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import MapPopupPointInfo from "@/components/MapPopupPointInfo.vue";
 
@@ -80,6 +107,29 @@ const FEATURE_TYPE_POINT = "POINT";
 
 const OVERLAY_TYPE_POINT = "POINT";
 const OVERLAY_TYPE_TEMPORARY = "TEMPORARY";
+
+const featureStyleFunc = (feature) => [
+  new Style({
+    image: new Circle({
+      radius: 10,
+      fill: new Fill({
+        color: "#ff8400",
+      }),
+    }),
+    text: new style_Text({
+      font: '1.5rem Avenir,sans-serif',
+      fill: new Fill({
+        color: '#ff8400'
+      }),
+      stroke: new Stroke({
+        color: '#fff',
+        width: 4
+      }),
+      offsetY: -18,
+      text: feature.get("name"),
+    }),
+  }),
+];
 
 export default {
   name: "MapView",
@@ -96,6 +146,7 @@ export default {
       currentOverlayPoint: null,
       temporaryPointCoordinates: null,
       map: null,
+      currentMapZoom: 12,
       overlayShowing: false,
       mapLayerNames: [
         {"id": "osm", "displayName": "OpenStreetMap"},
@@ -108,7 +159,7 @@ export default {
       OVERLAY_TYPE_TEMPORARY,
     };
   },
-  async mounted() {
+  mounted: async function () {
     let vectorTileLayer = new VectorTileLayer({
       declutter: true,
       source: new VectorTile({
@@ -164,32 +215,9 @@ export default {
     updatePoints();
     watch(allPoints, updatePoints);
 
-    const styleFunc = (feature) => [
-      new Style({
-        image: new Circle({
-          radius: 10,
-          fill: new Fill({
-            color: "#ff8400",
-          }),
-        }),
-        text: new style_Text({
-          font: '1.5rem Avenir,sans-serif',
-          fill: new Fill({
-            color: '#ff8400'
-          }),
-          stroke: new Stroke({
-            color: '#fff',
-            width: 4
-          }),
-          offsetY: -18,
-          text: feature.get("name"),
-        }),
-      }),
-    ];
-
     let featuresLayer = new layer_Vector({
       source: vectorSource,
-      style: styleFunc,
+      style: featureStyleFunc,
     });
     featuresLayer.setZIndex(100);
     this.overlay = new Overlay({
@@ -207,7 +235,7 @@ export default {
         featuresLayer,
       ],
       view: new View({
-        zoom: 12,
+        zoom: this.currentMapZoom,
         center: proj_transform([9, 47], 'EPSG:4326', 'EPSG:3857'),
         constrainResolution: true,
         projection: "EPSG:3857",
@@ -225,24 +253,11 @@ export default {
       ],
     });
 
-    this.map.on("singleclick", (evt) => {
-      const coordinate = evt.coordinate;
-      this.map.forEachFeatureAtPixel(evt.pixel, (feature, source) => {
-        if (feature.get("type") === FEATURE_TYPE_POINT) {
-          this.showPointInOverlay(feature.get("pointId"));
-          return true;
-        }
-      });
-
-      this.temporaryPointCoordinates = this.EPSG3857toLV03(coordinate);
-      getHeightFromSwissTopo(this.temporaryPointCoordinates.x,
-          this.temporaryPointCoordinates.y,
-          (height) => {
-            this.temporaryPointCoordinates.z = height;
-          },
-          console.log,
-      );
+    this.map.on('moveend', () => {
+      this.currentMapZoom = this.map.getView().getZoom();
     });
+
+    this.map.on("singleclick", this.handleSingleClickOnMap);
 
     navigator.geolocation.getCurrentPosition(position => {
           let posLonLat = [position.coords.longitude, position.coords.latitude];
@@ -259,6 +274,9 @@ export default {
     );
   },
   methods: {
+    LV03toWGS84,
+    createGoogleMapsLink,
+    createSwissTopoLink,
     formatCoordinates: formatCoordinatesLV03,
     setActiveMapLayer(newMapLayer) {
       this.map.removeLayer(this.mapLayers[this.activeMapLayer]);
@@ -285,6 +303,28 @@ export default {
         height: 0,
       });
     },
+    handleSingleClickOnMap(evt) {
+      const coordinate = evt.coordinate;
+      // noinspection JSUnusedLocalSymbols
+      const hitPoint = this.map.forEachFeatureAtPixel(evt.pixel, (feature, source) => {
+        if (feature.get("type") === FEATURE_TYPE_POINT) {
+          this.showPointInOverlay(feature.get("pointId"));
+          return true;
+        }
+      });
+      if (hitPoint) {
+        return;
+      }
+
+      this.temporaryPointCoordinates = this.EPSG3857toLV03(coordinate);
+      getHeightFromSwissTopo(this.temporaryPointCoordinates.x,
+          this.temporaryPointCoordinates.y,
+          (height) => {
+            this.temporaryPointCoordinates.z = height;
+          },
+          console.log,
+      );
+    },
   },
   watch: {
     temporaryPointCoordinates: function (newValue) {
@@ -297,6 +337,14 @@ export default {
         this.overlay.setPosition(this.LV03toEPSG3857(newValue));
       }
     }
+  },
+  computed: {
+    currentPopupPointCoordinates() {
+      if (this.currentOverlayPoint != null) {
+        return this.currentOverlayPoint.coordinates;
+      }
+      return this.temporaryPointCoordinates;
+    },
   }
 }
 </script>

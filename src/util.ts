@@ -170,3 +170,15 @@ export function extractCoordinatesFromString(text: string): LV03coordinates {
 
     return result;
 }
+
+export function createSwissTopoLink(coords: LV03coordinates, zoom: number = 8): string {
+    return "https://map.geo.admin.ch/" +
+        `?E=2${coords.x}` +
+        `&N=1${coords.y}` +
+        `&zoom=${zoom}` +
+        "&crosshair=marker";
+}
+
+export function createGoogleMapsLink(coords: WGS84coordinates, zoom: number = 8): string {
+    return `https://www.google.com/maps/place/${coords.latitude},${coords.longitude}/@${coords.latitude},${coords.longitude},${zoom}z`;
+}
