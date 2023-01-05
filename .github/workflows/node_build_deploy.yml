@@ -23,5 +23,8 @@ jobs:
         echo "${{ env.GITHUB_ACTOR }}"
         git config --global user.email "$GITHUB_ACTOR@users.noreply.github.com"
         git config --global user.name "$GITHUB_ACTOR"
+    - run: |
+        git config --get user.email
+        git config --get user.name
     - name: Run deployment script
       run: scripts/gh-pages-deploy.sh
