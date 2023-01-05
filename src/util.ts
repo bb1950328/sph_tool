@@ -4,21 +4,42 @@ const LV03_Y_MIN = 74_000;
 const LV03_Y_MAX = 296_000;
 const LV03_XY_MIDDLE = (LV03_Y_MAX + LV03_X_MIN) / 2; // if a coordinate is below that value, it's more likely to be a Y value, otherwise an X value
 
-export function formatCoordinates(coords: { [key: string]: number }): string {
-    const xStr = formatCoordinateXYValue(coords["x"]);
-    const yStr = formatCoordinateXYValue(coords["y"]);
-    const zStr = formatCoordinateZValue(coords["z"]);
+export interface LV03coordinates {
+    x: number;
+    y: number;
+    z: number;
+}
+
+export interface WGS84coordinates {
+    latitude: number;
+    longitude: number;
+    height: number;
+}
+
+export function formatCoordinatesLV03(coords: LV03coordinates): string {
+    const xStr = formatCoordinatesLV03_XYValue(coords.x);
+    const yStr = formatCoordinatesLV03_XYValue(coords.y);
+    const zStr = formatCoordinatesLV03ZValue(coords.z);
     return `${xStr} / ${yStr} / ${zStr}`;
 }
 
-export function formatCoordinateXYValue(value: number): string {
+export function formatCoordinatesLV03_XYValue(value: number): string {
     const sixDigit = Math.round(value) % 1000000;
     const numStr = sixDigit.toString().padStart(6, "0");
     return numStr.slice(0, 3) + " " + numStr.slice(3);
 }
 
-export function formatCoordinateZValue(value: number): string {
+export function formatCoordinatesLV03ZValue(value: number): string {
     return Math.round(value).toString();
+}
+
+export function formatCoordinatesWGS84Decimal(coords: WGS84coordinates): string {
+    const ns = coords.latitude > 0 ? "N" : "S";
+    const ew = coords.longitude > 0 ? "E" : "W";
+    const formattedLatitude = Math.abs(coords.latitude).toFixed(7);
+    const formattedLongitude = Math.abs(coords.longitude).toFixed(7);
+    const formattedHeight = coords.height.toFixed(1);
+    return `${formattedLatitude}° ${ns}, ${formattedLongitude}° ${ew}, ${formattedHeight}m`;
 }
 
 export function formatArtilleryPromilleValue(value: number): string {
@@ -32,9 +53,9 @@ export function formatArtilleryPromilleValue(value: number): string {
     }
 }
 
-export function LV03toWGS84(x: number, y: number, z: number): [number, number, number] {
-    const y_aux = (x - 600000) / 1000000;
-    const x_aux = (y - 200000) / 1000000;
+export function LV03toWGS84(lv03: LV03coordinates): WGS84coordinates {
+    const y_aux = (lv03.x - 600000) / 1000000;
+    const x_aux = (lv03.y - 200000) / 1000000;
     const longitude = 2.6779094 +
         4.728982 * y_aux +
         0.791484 * y_aux * x_aux +
@@ -46,15 +67,19 @@ export function LV03toWGS84(x: number, y: number, z: number): [number, number, n
         0.002528 * Math.pow(x_aux, 2) -
         0.0447 * Math.pow(y_aux, 2) * x_aux -
         0.0140 * Math.pow(x_aux, 3);
-    const h = z + 49.55
+    const h = lv03.z + 49.55
         - 12.60 * y_aux
         - 22.64 * x_aux;
-    return [latitude * 100 / 36, longitude * 100 / 36, h];
+    return {
+        latitude: latitude * 100 / 36,
+        longitude: longitude * 100 / 36,
+        height: h,
+    };
 }
 
-export function WGS84toLV03(latitude: number, longitude: number, height: number): [number, number, number] {
-    const latitudeTotalSec = latitude * 3600;
-    const longitudeTotalSec = longitude * 3600;
+export function WGS84toLV03(wgs84: WGS84coordinates): LV03coordinates {
+    const latitudeTotalSec = wgs84.latitude * 3600;
+    const longitudeTotalSec = wgs84.longitude * 3600;
     // https://www.swisstopo.admin.ch/content/swisstopo-internet/en/topics/survey/reference-systems/switzerland/_jcr_content/contentPar/tabs/items/dokumente_publikatio/tabPar/downloadlist/downloadItems/516_1459343097192.download/ch1903wgs84_e.pdf
     const latAux = (latitudeTotalSec - 169028.66) / 10000;
     const lonAux = (longitudeTotalSec - 26782.5) / 10000;
@@ -71,18 +96,22 @@ export function WGS84toLV03(latitude: number, longitude: number, height: number)
         + 119.79 * Math.pow(latAux, 3);
     const x = e - 2000000;
     const y = n - 1000000;
-    const z = height - 49.55
+    const z = wgs84.height - 49.55
         + 2.73 * lonAux
         + 6.94 * latAux;
-    return [x, y, z];
+    return {x: x, y: y, z: z};
 }
 
-export function getCurrentPositionLV03(successCallback: (arg0: { [key: string]: number | null }) => void, errorCallback: (arg0: any) => void): void {
+export function getCurrentPositionLV03(successCallback: (coords: LV03coordinates) => void, errorCallback: (arg0: any) => void): void {
     navigator.geolocation.getCurrentPosition(position => {
             const hasAltitude = position.coords.altitude !== null;
             const altitudeOrZero = hasAltitude ? position.coords.altitude : 0;
-            const [x, y, z] = WGS84toLV03(position.coords.latitude, position.coords.longitude, altitudeOrZero);
-            successCallback({"x": x, "y": y, "z": hasAltitude ? z : null});
+            const wgsCoords: WGS84coordinates = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                height: altitudeOrZero,
+            };
+            successCallback(WGS84toLV03(wgsCoords));
         },
         errorCallback,
         {
@@ -102,15 +131,16 @@ export function getHeightFromSwissTopo(x: number, y: number, successCallback: (h
     fetch(url)
         .then(response => response.json())
         .then(json => json["height"])
+        .then(parseFloat)
         .then(successCallback)
         .catch(errorCallback);
 }
 
-export function extractCoordinatesFromString(text: string): { [key: string]: number } {
+export function extractCoordinatesFromString(text: string): LV03coordinates {
     //todo unit tests for this function
     const regex = new RegExp(/[12]?[' ]?(\d{3})[' ]?(\d{3})(\.\d+)?/, "g");
     let rest = text;
-    const result: { [key: string]: number } = {};
+    const result: LV03coordinates = {x: 0, y: 0, z: 0};
 
     for (const match of text.matchAll(regex)) {
         console.log(match[0]);
@@ -121,9 +151,9 @@ export function extractCoordinatesFromString(text: string): { [key: string]: num
             }
         }
         if (LV03_Y_MIN <= number && number <= LV03_XY_MIDDLE) {
-            result["y"] = number;
+            result.y = number;
         } else if (LV03_XY_MIDDLE <= number && number <= LV03_X_MAX) {
-            result["x"] = number;
+            result.x = number;
         }
         rest = rest.replace(match[0], "");
     }
@@ -135,7 +165,7 @@ export function extractCoordinatesFromString(text: string): { [key: string]: num
         for (let i = 1; match[i] != null; i++) {
             number += match[i];
         }
-        result["z"] = Math.round(parseFloat(number));
+        result.z = Math.round(parseFloat(number));
     }
 
     return result;

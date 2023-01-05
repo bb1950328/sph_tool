@@ -95,9 +95,9 @@
 <script>
 import {
   extractCoordinatesFromString,
-  formatCoordinates,
-  formatCoordinateXYValue,
-  formatCoordinateZValue,
+  formatCoordinatesLV03,
+  formatCoordinatesLV03_XYValue,
+  formatCoordinatesLV03ZValue,
   getCurrentPositionLV03,
   getHeightFromSwissTopo
 } from "@/util";
@@ -111,7 +111,7 @@ import {allPoints} from "@/points_list"
 export default {
   name: "PointList",
   methods: {
-    formatCoordinates: formatCoordinates,
+    formatCoordinates: formatCoordinatesLV03,
     newPoint() {
       let nr = this.findNextFreeNumber();
       this.allPoints[nr] = {
@@ -135,13 +135,13 @@ export default {
       let y = coordinates["y"];
       let z = coordinates["z"];
       if (x) {
-        document.getElementById("modalInputX").value = formatCoordinateXYValue(x);
+        document.getElementById("modalInputX").value = formatCoordinatesLV03_XYValue(x);
       }
       if (y) {
-        document.getElementById("modalInputY").value = formatCoordinateXYValue(y);
+        document.getElementById("modalInputY").value = formatCoordinatesLV03_XYValue(y);
       }
       if (z) {
-        document.getElementById("modalInputZ").value = formatCoordinateZValue(z);
+        document.getElementById("modalInputZ").value = formatCoordinatesLV03ZValue(z);
       }
     },
     openModal(nr) {

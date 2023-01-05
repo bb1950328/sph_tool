@@ -94,7 +94,7 @@
 
 <script>
 import {allPoints} from "@/points_list";
-import {formatArtilleryPromilleValue, formatCoordinates} from "@/util";
+import {formatArtilleryPromilleValue, formatCoordinatesLV03} from "@/util";
 
 export default {
   name: "CoordinateCalculations",
@@ -120,7 +120,7 @@ export default {
   },
   methods: {
     formatArtilleryPromilleValue: formatArtilleryPromilleValue,
-    formatCoordinates: formatCoordinates,
+    formatCoordinates: formatCoordinatesLV03,
     unknownValueChangedTo(unknown) {
       this.currentUnknownValue = unknown;
     },

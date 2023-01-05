@@ -1,4 +1,10 @@
 import {reactive, watch} from "vue";
+import {LV03coordinates} from "@/util";
+
+export interface Point {
+    description: string,
+    coordinates: LV03coordinates,
+}
 
 export const allPoints = reactive(loadPoints());
 
@@ -8,7 +14,7 @@ function storePoints() {
     localStorage.setItem("points", JSON.stringify(allPoints));
 }
 
-function loadPoints() {
+function loadPoints(): {[id: number]: Point} {
     const points = localStorage.getItem("points");
     if (points === null) {
         return {

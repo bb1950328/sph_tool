@@ -4,15 +4,9 @@
     <a id="popup-closer" class="ol-popup-closer" @click="overlayShowing=false">
       <font-awesome-icon icon="fa-solid fa-xmark"/>
     </a>
-    <div class="popup-content" :class="{'shown': overlayType===OVERLAY_TYPE_POINT}" ref="popupContentPoint">
-      <h4>{{ currentOverlayPoint?.description }}</h4>
-      <table>
-        <tr>
-          <th scope="row">LV03:</th>
-          <td>{{ currentOverlayPoint ? formatCoordinates(currentOverlayPoint.coordinates) : "" }}</td>
-        </tr>
-        <!-- TODO show point in other coordinate systems here-->
-      </table>
+    <div class="popup-content" v-if="currentOverlayPoint!=null" ref="popupContentPoint">
+      <MapPopupPointInfo :coordinates="currentOverlayPoint"
+                         :title="currentOverlayPoint?.description"/>
       <div class="btn-group btn-group-sm" role="group">
         <button class="btn btn-outline-primary">
           <!-- TODO click handler that opens edit window-->
@@ -20,6 +14,16 @@
         </button>
         <button class="btn btn-outline-danger">
           <font-awesome-icon icon="fa-solid fa-trash-can"/>
+        </button>
+      </div>
+    </div>
+    <div class="popup-content" v-if="temporaryPointCoordinates!=null" ref="popupContentTemporary">
+      <MapPopupPointInfo :coordinates="temporaryPointCoordinates"
+                         title="Temporärer Punkt"/>
+      <div class="btn-group btn-group-sm" role="group">
+        <button class="btn btn-outline-primary">
+          <!-- TODO click handler that opens create window-->
+          <font-awesome-icon icon="fa-solid fa-floppy-disk"/>
         </button>
       </div>
     </div>
@@ -57,16 +61,15 @@ import {apply, applyStyle} from 'ol-mapbox-style';
 import {transform as proj_transform} from "ol/proj";
 import {defaults as control_defaults} from "ol/control";
 import LayerGroup from "ol/layer/Group";
-import {Tile} from "ol/layer";
-import {Vector as layer_Vector} from "ol/layer";
+import {Tile, Vector as layer_Vector} from "ol/layer";
 import {Feature, Overlay} from "ol";
 import {Point} from "ol/geom";
-import {Circle, Fill, Stroke, Style} from "ol/style";
-import {Text as style_Text} from "ol/style"
+import {Circle, Fill, Stroke, Style, Text as style_Text} from "ol/style";
 import {watch} from "vue";
 import {allPoints} from "@/points_list";
-import {formatCoordinates, LV03toWGS84, WGS84toLV03} from "@/util";
+import {formatCoordinatesLV03, getHeightFromSwissTopo, LV03toWGS84, WGS84toLV03} from "@/util";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import MapPopupPointInfo from "@/components/MapPopupPointInfo.vue";
 
 const PIXEL_URL = "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg";
 const SATELLITE_URL = "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg"
@@ -76,10 +79,11 @@ const VECTOR_TILE_URL = "https://vectortiles.geo.admin.ch/tiles/ch.swisstopo.lei
 const FEATURE_TYPE_POINT = "POINT";
 
 const OVERLAY_TYPE_POINT = "POINT";
+const OVERLAY_TYPE_TEMPORARY = "TEMPORARY";
 
 export default {
   name: "MapView",
-  components: {FontAwesomeIcon},
+  components: {MapPopupPointInfo, FontAwesomeIcon},
   props: {},
 
   data() {
@@ -90,6 +94,7 @@ export default {
       overlay: null,
       overlayType: null,
       currentOverlayPoint: null,
+      temporaryPointCoordinates: null,
       map: null,
       overlayShowing: false,
       mapLayerNames: [
@@ -100,6 +105,7 @@ export default {
       ],
 
       OVERLAY_TYPE_POINT,
+      OVERLAY_TYPE_TEMPORARY,
     };
   },
   async mounted() {
@@ -146,10 +152,10 @@ export default {
       vectorSource.clear();
       Object.keys(allPoints).forEach(id => {
         const pt = allPoints[id];
-        const [wLat, wLon, _] = LV03toWGS84(pt.coordinates.x, pt.coordinates.y, pt.coordinates.z);
+        const wgs84pt = LV03toWGS84(pt.coordinates);
         vectorSource.addFeature(new Feature({
           name: pt.description,
-          geometry: new Point(proj_transform([wLon, wLat], "EPSG:4326", "EPSG:3857")),
+          geometry: new Point(proj_transform([wgs84pt.longitude, wgs84pt.latitude], "EPSG:4326", "EPSG:3857")),
           type: FEATURE_TYPE_POINT,
           pointId: id,
         }));
@@ -223,23 +229,28 @@ export default {
       const coordinate = evt.coordinate;
       this.map.forEachFeatureAtPixel(evt.pixel, (feature, source) => {
         if (feature.get("type") === FEATURE_TYPE_POINT) {
-          this.showPointInOverlay(evt.coordinate, feature.get("pointId"));
+          this.showPointInOverlay(feature.get("pointId"));
           return true;
         }
       });
 
-      const [lon, lat] = proj_transform(coordinate, 'EPSG:3857', 'EPSG:4326')
-      const [x, y, _] = WGS84toLV03(lat, lon, null);
-      console.log(x, y);
+      this.temporaryPointCoordinates = this.EPSG3857toLV03(coordinate);
+      getHeightFromSwissTopo(this.temporaryPointCoordinates.x,
+          this.temporaryPointCoordinates.y,
+          (height) => {
+            this.temporaryPointCoordinates.z = height;
+          },
+          console.log,
+      );
     });
 
     navigator.geolocation.getCurrentPosition(position => {
           let posLonLat = [position.coords.longitude, position.coords.latitude];
           this.map.getView().setCenter(proj_transform(posLonLat, 'EPSG:4326', 'EPSG:3857'));
-          console.log("got initial map center from GPS ", posLonLat);
+          console.info("got initial map center from GPS ", posLonLat);
         },
         err => {
-          console.log("didn't get GPS position: ", err);
+          console.info("didn't get GPS position: ", err);
         },
         {
           enableHighAccuracy: true,
@@ -248,20 +259,43 @@ export default {
     );
   },
   methods: {
-    formatCoordinates,
+    formatCoordinates: formatCoordinatesLV03,
     setActiveMapLayer(newMapLayer) {
       this.map.removeLayer(this.mapLayers[this.activeMapLayer]);
       this.map.addLayer(this.mapLayers[newMapLayer]);
       this.activeMapLayer = newMapLayer;
     },
-    showPointInOverlay(olCoordinate, pointId) {
+    showPointInOverlay(pointId) {
+      this.temporaryPointCoordinates = null;
       const point = allPoints[pointId];
-      const [lat, lon, _] = LV03toWGS84(point.coordinates.x, point.coordinates.y, point.coordinates.z);
-      olCoordinate = proj_transform([lon, lat], "EPSG:4326", 'EPSG:3857');
       this.currentOverlayPoint = point;
       this.overlayShowing = true;
       this.overlayType = OVERLAY_TYPE_POINT;
-      this.overlay.setPosition(olCoordinate);
+      this.overlay.setPosition(this.LV03toEPSG3857(point.coordinates));
+    },
+    LV03toEPSG3857(lv03coord) {
+      const wgs84 = LV03toWGS84(lv03coord);
+      return proj_transform([wgs84.longitude, wgs84.latitude], "EPSG:4326", 'EPSG:3857');
+    },
+    EPSG3857toLV03(epsgCoord) {
+      const wgs84 = proj_transform(epsgCoord, 'EPSG:3857', "EPSG:4326");
+      return WGS84toLV03({
+        latitude: wgs84[1],
+        longitude: wgs84[0],
+        height: 0,
+      });
+    },
+  },
+  watch: {
+    temporaryPointCoordinates: function (newValue) {
+      if (newValue === null) {
+        this.overlayShowing = false;
+      } else {
+        this.overlayType = OVERLAY_TYPE_TEMPORARY;
+        this.overlayShowing = true;
+        this.currentOverlayPoint = null;
+        this.overlay.setPosition(this.LV03toEPSG3857(newValue));
+      }
     }
   }
 }
@@ -291,8 +325,7 @@ export default {
   display: none;
 }
 
-.ol-popup.shown,
-.popup-content.shown {
+.ol-popup.shown {
   display: initial;
 }
 
