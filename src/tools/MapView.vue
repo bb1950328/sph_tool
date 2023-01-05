@@ -16,7 +16,8 @@
           <!-- TODO click handler that opens edit window-->
           <font-awesome-icon icon="fa-solid fa-pen"/>
         </button>
-        <button v-if="currentOverlayPoint!=null" class="btn btn-danger">
+        <button v-if="currentOverlayPoint!=null" class="btn btn-danger"
+                @click="deletePoint(currentOverlayPointId); currentOverlayPointId=null">
           <font-awesome-icon icon="fa-solid fa-trash-can"/>
         </button>
 
@@ -142,12 +143,10 @@ export default {
       mapLayers: {},
       activeMapLayer: activeMapLayer,
       overlay: null,
-      overlayType: null,
-      currentOverlayPoint: null,
+      currentOverlayPointId: null,
       temporaryPointCoordinates: null,
       map: null,
       currentMapZoom: 12,
-      overlayShowing: false,
       mapLayerNames: [
         {"id": "osm", "displayName": "OpenStreetMap"},
         {"id": "pixel", "displayName": "SwissTopo Pixel"},
@@ -283,14 +282,6 @@ export default {
       this.map.addLayer(this.mapLayers[newMapLayer]);
       this.activeMapLayer = newMapLayer;
     },
-    showPointInOverlay(pointId) {
-      this.temporaryPointCoordinates = null;
-      const point = allPoints[pointId];
-      this.currentOverlayPoint = point;
-      this.overlayShowing = true;
-      this.overlayType = OVERLAY_TYPE_POINT;
-      this.overlay.setPosition(this.LV03toEPSG3857(point.coordinates));
-    },
     LV03toEPSG3857(lv03coord) {
       const wgs84 = LV03toWGS84(lv03coord);
       return proj_transform([wgs84.longitude, wgs84.latitude], "EPSG:4326", 'EPSG:3857');
@@ -308,7 +299,7 @@ export default {
       // noinspection JSUnusedLocalSymbols
       const hitPoint = this.map.forEachFeatureAtPixel(evt.pixel, (feature, source) => {
         if (feature.get("type") === FEATURE_TYPE_POINT) {
-          this.showPointInOverlay(feature.get("pointId"));
+          this.currentOverlayPointId = feature.get("pointId");
           return true;
         }
       });
@@ -325,18 +316,23 @@ export default {
           console.log,
       );
     },
+    deletePoint(pointId) {
+      delete allPoints[pointId];
+    }
   },
   watch: {
     temporaryPointCoordinates: function (newValue) {
-      if (newValue === null) {
-        this.overlayShowing = false;
-      } else {
-        this.overlayType = OVERLAY_TYPE_TEMPORARY;
-        this.overlayShowing = true;
-        this.currentOverlayPoint = null;
+      if (newValue !== null) {
+        this.currentOverlayPointId = null;
         this.overlay.setPosition(this.LV03toEPSG3857(newValue));
       }
-    }
+    },
+    currentOverlayPointId: function (newValue) {
+      if (newValue != null) {
+        this.temporaryPointCoordinates = null;
+        this.overlay.setPosition(this.LV03toEPSG3857(allPoints[newValue].coordinates));
+      }
+    },
   },
   computed: {
     currentPopupPointCoordinates() {
@@ -345,6 +341,20 @@ export default {
       }
       return this.temporaryPointCoordinates;
     },
+    currentOverlayPoint() {
+      return allPoints[this.currentOverlayPointId];
+    },
+    overlayShowing: {
+      set(value) {
+        if (!value) {
+          this.currentOverlayPointId = null;
+          this.temporaryPointCoordinates = null;
+        }
+      },
+      get() {
+        return this.currentOverlayPointId != null || this.temporaryPointCoordinates != null;
+      }
+    }
   }
 }
 </script>
