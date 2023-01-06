@@ -44,4 +44,11 @@ export default {
 #offcanvas-navbar {
   --bs-offcanvas-width: 15rem;
 }
+.navbar>.container-fluid {
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+.fixed-top {
+  left: initial;
+}
 </style>

@@ -17,6 +17,7 @@
     "@popperjs/core": "^2.11.6",
     "bootstrap": "github:bb1950328/bootstrap#main",
     "core-js": "^3.27.1",
+    "exif-js": "^2.3.0",
     "ol": "^7.2.2",
     "ol-mapbox-style": "^9.3.0",
     "sass": "^1.57.1",
