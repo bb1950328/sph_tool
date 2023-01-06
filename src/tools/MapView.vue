@@ -12,8 +12,8 @@
                          title="Temporärer Punkt"
                          v-if="temporaryPointCoordinates!=null"/>
       <div class="btn-group btn-group-sm" role="group">
-        <button v-if="currentOverlayPoint!=null" class="btn btn-primary">
-          <!-- TODO click handler that opens edit window-->
+        <button v-if="currentOverlayPoint!=null" class="btn btn-primary"
+                @click="$router.push({path: 'pointList', query: {intent: JSON.stringify({action: 'edit', nr: currentOverlayPointId})}})">
           <font-awesome-icon icon="fa-solid fa-pen"/>
         </button>
         <button v-if="currentOverlayPoint!=null" class="btn btn-danger"
@@ -21,8 +21,8 @@
           <font-awesome-icon icon="fa-solid fa-trash-can"/>
         </button>
 
-        <button v-if="temporaryPointCoordinates!=null" class="btn btn-primary">
-          <!-- TODO click handler that opens create window-->
+        <button v-if="temporaryPointCoordinates!=null" class="btn btn-primary"
+                @click="$router.push({path: 'pointList', query: {intent: JSON.stringify({action: 'create', coordinates: temporaryPointCoordinates})}})">
           <font-awesome-icon icon="fa-solid fa-floppy-disk"/>
         </button>
 

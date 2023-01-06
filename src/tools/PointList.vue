@@ -107,15 +107,37 @@ import {Modal} from "bootstrap"
 import {mask} from "vue-the-mask";
 
 import {allPoints} from "@/points_list"
+import {useRoute} from "vue-router";
 
+const NEW_POINT_DESCRIPTION = "Neuer Punkt";
 export default {
   name: "PointList",
+  mounted() {
+    const route = useRoute();
+    if (Object.hasOwn(route.query, "intent")) {
+      const intent = JSON.parse(String(route.query.intent));
+      if (intent.action === "create") {
+        let nr = this.findNextFreeNumber();
+        this.allPoints[nr] = {
+          "description": NEW_POINT_DESCRIPTION,
+          "coordinates": intent.coordinates,
+        };
+        this.openModal(nr);
+      } else if (intent.action === "edit") {
+        this.openModal(intent.nr);
+      } else {
+        console.warn(`did not understand intent action: ${intent.action}`);
+      }
+      // noinspection JSUnresolvedFunction
+      this.$router.replace({'query': undefined});
+    }
+  },
   methods: {
     formatCoordinates: formatCoordinatesLV03,
     newPoint() {
       let nr = this.findNextFreeNumber();
       this.allPoints[nr] = {
-        "description": "Neuer Punkt",
+        "description": NEW_POINT_DESCRIPTION,
         "coordinates": {"x": 0, "y": 0, "z": 0}
       };
       this.openModal(nr);
