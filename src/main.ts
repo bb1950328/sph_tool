@@ -18,6 +18,8 @@ import {
     faMagnifyingGlassMinus,
     faMagnifyingGlassPlus,
     faSlash,
+    faCameraRotate,
+    faCamera,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -35,6 +37,8 @@ library.add(
     faMagnifyingGlassMinus,
     faMagnifyingGlassPlus,
     faSlash,
+    faCameraRotate,
+    faCamera,
 );
 
 import "bootstrap/dist/css/bootstrap.min.css"
