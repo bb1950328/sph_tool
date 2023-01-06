@@ -4,10 +4,6 @@
 </template>
 
 <script>
-import PointList from "@/tools/PointList.vue";
-import CoordinateCalculations from "@/tools/CoordinateCalculations.vue";
-import BallisticsCalculator from "@/tools/BallisticsCalculator.vue";
-import MapView from "@/tools/MapView.vue";
 import NavBar from "@/components/NavBar.vue";
 
 export default {

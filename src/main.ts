@@ -48,6 +48,7 @@ export const toolRoutes = [
     {path: "/coordinateCalculations", component: CoordinateCalculations, name: "Koordinatenberechnungen"},
     {path: "/mapView", component: MapView, name: "Karte"},
     {path: "/ballisticsCalculator", component: BallisticsCalculator, name: "Ballistik"},
+    {path: "/cameraGonio", component: CameraGonio, name: "Kamera-Gonio"},
 ];
 
 const router = createRouter({
@@ -64,6 +65,7 @@ import PointList from "@/tools/PointList.vue";
 import BallisticsCalculator from "@/tools/BallisticsCalculator.vue";
 import CoordinateCalculations from "@/tools/CoordinateCalculations.vue";
 import MapView from "@/tools/MapView.vue";
+import CameraGonio from "@/tools/CameraGonio.vue";
 
 createApp(App)
     .component("font-awesome-icon", FontAwesomeIcon)
