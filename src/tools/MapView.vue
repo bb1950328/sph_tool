@@ -53,7 +53,7 @@
     <div class="btn-group-vertical" role="group">
       <div class="btn-group dropstart" role="group">
         <button id="map-type-drop" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
-                aria-expanded="false">
+                aria-expanded="false" aria-label="Map Layer Chooser">
           <font-awesome-icon icon="fa-solid fa-layer-group"/>
         </button>
         <ul class="dropdown-menu" aria-labelledby="map-type-drop">

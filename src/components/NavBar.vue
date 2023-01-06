@@ -1,9 +1,9 @@
 <template>
   <nav class="navbar fixed-top">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#"></a>
+      <a class="navbar-brand" href="#" aria-label="Home"></a>
       <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-navbar"
-              aria-controls="offcanvas-navbar">
+              aria-controls="offcanvas-navbar" aria-label="Open Navigation">
         <font-awesome-icon icon="fa-solid fa-bars"/>
       </button>
       <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-navbar"

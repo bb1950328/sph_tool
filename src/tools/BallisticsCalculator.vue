@@ -1,35 +1,35 @@
 <template>
-  <div class="p-2">
-    <form>
+  <div class="p-2 d-flex flex-column">
+    <form class="col-11">
       <div class="mb-3 row">
-        <div class="col-9">
+        <div class="col">
           <label for="distance-range-input" class="form-label">Distanz</label>
           <input id="distance-range-input" type="range" class="form-range"
                  v-model="situation.distance" min="100" max="1200">
         </div>
-        <div class="col-3 double-input-value-container">
+        <div class="col-sm-2 col-md-2 col-lg-1 double-input-value-container">
           <label for="distance-value-input" class="form-label" hidden>Distanz</label>
-          <input id="distance-value-input" type="number" class="form-control" v-model="situation.distance">
+          <input id="distance-value-input" type="number" class="form-control" v-model="situation.distance" aria-label="Distance">
         </div>
       </div>
       <div class="mb-3 row">
-        <div class="col-9">
+        <div class="col">
           <label for="wind-speed-range-input" class="form-label">Windgeschwindigkeit</label>
           <input id="wind-speed-range-input" type="range" class="form-range"
                  v-model="situation.windSpeed" min="0" max="10">
         </div>
-        <div class="col-3 double-input-value-container">
+        <div class="col-sm-2 col-md-2 col-lg-1 double-input-value-container">
           <label for="wind-speed-value-input" class="form-label" hidden>Windgeschwindigkeit</label>
           <input id="wind-speed-value-input" class="form-control" type="number"
-                 v-model="situation.windSpeed" min="0" max="10">
+                 v-model="situation.windSpeed" min="0" max="10" aria-label="Wind speed">
         </div>
       </div>
       <div class="mb-3 row">
-        <div class="col-5">
+        <div class="col-lg-3 col-md-4 col-sm-5">
           <label for="windDirectionInput" class="form-label">Windrichtung (Uhr)</label>
           <ClockRadioGroup v-model="situation.windClock"/>
         </div>
-        <div class="col-7">
+        <div class="col">
           <div class="mb-3">
             <label for="airPressureInput" class="form-label">Luftdruck</label>
             <input id="airPressureInput" type="number" class="form-control" v-model="situation.airPressure">
@@ -54,7 +54,7 @@
       </div>
     </form>
     <h2>Resultat</h2>
-    <div class="mb-3" id="clicks-result">
+    <div class="mb-5" id="clicks-result">
       <div class="">
         <table>
           <tr>
@@ -103,7 +103,7 @@
       </div>
     </div>
 
-    <button type="button" class="btn btn-outline-secondary" @click="$refs.clickTable.openModal(this.situation)">
+    <button type="button" class="btn btn-outline-secondary w-auto" @click="$refs.clickTable.openModal(this.situation)">
       <font-awesome-icon icon="fa-solid fa-table-cells"/>
       Klicktabelle berechnen
     </button>

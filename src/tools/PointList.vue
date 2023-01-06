@@ -20,10 +20,10 @@
         <td>{{ formatCoordinates(pt.coordinates) }}</td>
         <td>
           <div class="btn-group" role="group" aria-label="Aktionen">
-            <button type="button" class="btn btn-outline-secondary btn-sm edit-point-button" @click="openModal(nr)">
+            <button type="button" class="btn btn-outline-secondary btn-sm edit-point-button" @click="openModal(nr)" aria-label="Edit {{nr}}">
               <font-awesome-icon icon="fa-solid fa-pen"/>
             </button>
-            <button type="button" class="btn btn-outline-danger btn-sm delete-point-button" @click="removePoint(nr)">
+            <button type="button" class="btn btn-outline-danger btn-sm delete-point-button" @click="removePoint(nr)" aria-label="Delete {{nr}}">
               <font-awesome-icon icon="fa-solid fa-trash-can"/>
             </button>
           </div>
