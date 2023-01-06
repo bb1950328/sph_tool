@@ -13,7 +13,11 @@ import {
     faTableCells,
     faLayerGroup,
     faBars,
-    faXmark, faFloppyDisk,
+    faXmark,
+    faFloppyDisk,
+    faMagnifyingGlassMinus,
+    faMagnifyingGlassPlus,
+    faSlash,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -28,6 +32,9 @@ library.add(
     faBars,
     faXmark,
     faFloppyDisk,
+    faMagnifyingGlassMinus,
+    faMagnifyingGlassPlus,
+    faSlash,
 );
 
 import "bootstrap/dist/css/bootstrap.min.css"

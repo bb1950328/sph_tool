@@ -51,6 +51,25 @@
   </div>
   <div id="map-controls">
     <div class="btn-group-vertical" role="group">
+      <button type="button" class="btn btn-primary" aria-label="Disable showing GPS position"
+              @click="showingCurrentLocation=false" v-if="showingCurrentLocation">
+        <font-awesome-icon icon="fa-solid fa-location-crosshairs"/>
+      </button>
+      <button type="button" class="btn btn-primary" aria-label="Enable showing GPS position"
+              @click="showingCurrentLocation=true" v-else>
+        <font-awesome-layers>
+          <font-awesome-icon icon="fa-solid fa-slash" transform="left-2"/>
+          <font-awesome-icon icon="fa-solid fa-location-crosshairs"/>
+        </font-awesome-layers>
+      </button>
+
+      <button type="button" class="btn btn-secondary" aria-label="Zoom in" @click="this.currentMapZoom+=1">
+        <font-awesome-icon icon="fa-solid fa-magnifying-glass-plus"/>
+      </button>
+      <button type="button" class="btn btn-secondary" aria-label="Zoom out" @click="this.currentMapZoom-=1">
+        <font-awesome-icon icon="fa-solid fa-magnifying-glass-minus"/>
+      </button>
+
       <div class="btn-group dropstart" role="group">
         <button id="map-type-drop" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
                 aria-expanded="false" aria-label="Map Layer Chooser">
@@ -96,7 +115,7 @@ import {
   LV03toWGS84,
   WGS84toLV03,
 } from "@/util";
-import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import {FontAwesomeIcon, FontAwesomeLayers} from "@fortawesome/vue-fontawesome";
 import MapPopupPointInfo from "@/components/MapPopupPointInfo.vue";
 
 const PIXEL_URL = "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg";
@@ -105,6 +124,7 @@ const VECTOR_STYLE_URL = "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.l
 const VECTOR_TILE_URL = "https://vectortiles.geo.admin.ch/tiles/ch.swisstopo.leichte-basiskarte.vt/v2.0.0/{z}/{x}/{y}.pbf";
 
 const FEATURE_TYPE_POINT = "POINT";
+const FEATURE_TYPE_CURRENT_LOCATION = "CURRENT_LOCATION";
 
 const OVERLAY_TYPE_POINT = "POINT";
 const OVERLAY_TYPE_TEMPORARY = "TEMPORARY";
@@ -114,13 +134,13 @@ const featureStyleFunc = (feature) => [
     image: new Circle({
       radius: 10,
       fill: new Fill({
-        color: "#ff8400",
+        color: "#ff0000",
       }),
     }),
     text: new style_Text({
       font: '1.5rem Avenir,sans-serif',
       fill: new Fill({
-        color: '#ff8400'
+        color: '#ff0000'
       }),
       stroke: new Stroke({
         color: '#fff',
@@ -132,9 +152,23 @@ const featureStyleFunc = (feature) => [
   }),
 ];
 
+const currentLocationLayerStyleFunc = (feature) => [
+  new Style({
+    image: new Circle({
+      radius: 8,
+      fill: new Fill({
+        color: "#0000ff",
+      }),
+      stroke: new Stroke({
+        color: "#ffffff",
+      }),
+    }),
+  }),
+];
+
 export default {
   name: "MapView",
-  components: {MapPopupPointInfo, FontAwesomeIcon},
+  components: {FontAwesomeLayers, MapPopupPointInfo, FontAwesomeIcon},
   props: {},
 
   data() {
@@ -147,6 +181,9 @@ export default {
       temporaryPointCoordinates: null,
       map: null,
       currentMapZoom: 12,
+      showingCurrentLocation: false,
+      currentLocationSource: null,
+      geolocationWatchId: null,
       mapLayerNames: [
         {"id": "osm", "displayName": "OpenStreetMap"},
         {"id": "pixel", "displayName": "SwissTopo Pixel"},
@@ -227,11 +264,19 @@ export default {
         },
       },
     });
+    this.currentLocationSource = new Vector({
+      features: [],
+    });
+    const currentLocationLayer = new layer_Vector({
+      source: this.currentLocationSource,
+      style: currentLocationLayerStyleFunc,
+    });
     this.map = new Map({
       target: this.$refs.map_root,
       layers: [
         this.mapLayers[this.activeMapLayer],
         featuresLayer,
+        currentLocationLayer,
       ],
       view: new View({
         zoom: this.currentMapZoom,
@@ -333,6 +378,38 @@ export default {
         this.overlay.setPosition(this.LV03toEPSG3857(allPoints[newValue].coordinates));
       }
     },
+    currentMapZoom: function (newValue) {
+      this.map.getView().animate({
+        zoom: newValue,
+        duration: 100,
+      });
+    },
+    showingCurrentLocation: function (newValue) {
+      if (newValue) {
+        const feature = new Feature({
+          geometry: new Point([0, 0]),
+          type: FEATURE_TYPE_CURRENT_LOCATION,
+          style: new Style(null),//hide this feature
+        });
+
+        this.geolocationWatchId = navigator.geolocation.watchPosition(position => {
+              console.log(position);
+              feature.getGeometry().setCoordinates(proj_transform([position.coords.longitude, position.coords.latitude], "EPSG:4326", "EPSG:3857"));
+              feature.setStyle(null);
+            },
+            err => {
+              console.log(err);
+              feature.setStyle(new Style(null));
+            });
+        this.currentLocationSource.addFeature(feature);
+      } else {
+        this.currentLocationSource.clear();
+        if (this.geolocationWatchId != null) {
+          navigator.geolocation.clearWatch(this.geolocationWatchId);
+          this.geolocationWatchId = null;
+        }
+      }
+    }
   },
   computed: {
     currentPopupPointCoordinates() {
