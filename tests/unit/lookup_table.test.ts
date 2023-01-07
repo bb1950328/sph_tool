@@ -1,5 +1,4 @@
-// noinspection ES6PreferShortImport
-import {LookUpTable1D} from "../../src/lookup_table";
+import {LookUpTable1D} from "@/lookup_table";
 
 import {expect, test} from "vitest";
 

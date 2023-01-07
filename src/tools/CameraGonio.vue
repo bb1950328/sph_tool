@@ -49,7 +49,7 @@
       </div>
     </div>
     <div class="row">
-      <img ref="image" id="image">
+      <div ref="image" id="image"></div>
     </div>
     <!--    <div style="width: 40rem;height: 60rem;margin-left: 2rem">
           <PhotoCamera v-show="imageSourceType===ImageSourceType.WEBCAM"/>
@@ -58,9 +58,14 @@
 </template>
 
 <script>
-import EXIF from "exif-js";
+import EXIF from "exif-js";//todo convert this to exifreader https://github.com/mattiasw/ExifReader
 import {formatCoordinatesLV03, WGS84toLV03} from "@/util";
 import {allPoints} from "@/points_list";
+import * as ol from "ol";
+import * as ol_layer from "ol/layer";
+import * as ol_source from "ol/source";
+import {defaults as control_defaults} from "ol/control/defaults";
+import {log} from "ol/console";
 
 const ImageSourceType = Object.freeze({
   WEBCAM: "WEBCAM",
@@ -84,6 +89,8 @@ export default {
       imageSourceType: ImageSourceType.FILE_IMPORT,
       ownLocationType: OwnLocationType.EXIF_GPS,
 
+      map: null,
+
       ImageSourceType,
       OwnLocationType,
     };
@@ -98,9 +105,53 @@ export default {
       const outerThis = this;
       EXIF.getData(this.currentImageFile, function () {
         outerThis.currentImageFileExif = EXIF.getAllTags(this);
+        outerThis.loadImageToMap();
       });
-      this.$refs.image.src = URL.createObjectURL(this.currentImageFile);
     },
+    loadImageToMap() {
+      const extent = [0, 0, this.currentImageFileExif["ImageWidth"], this.currentImageFileExif["ImageHeight"]];
+      const resolutions = [256, 128, 64, 32, 16, 8, 4, 2, 1, 0.5, 0.25];
+
+      const layer = new ol_layer.Image({
+        source: new ol_source.ImageStatic({
+          url: URL.createObjectURL(this.currentImageFile),
+          imageExtent: extent
+        })
+      });
+
+      if (this.map != null) {
+        this.map.setTarget(null);
+      }
+
+      this.map = new ol.Map({
+        layers: [layer],
+        target: 'image',
+        view: new ol.View({
+          resolutions: resolutions,
+          extent: extent,
+        }),
+        controls: control_defaults({
+          attribution: false,
+          zoom: false,
+          rotate: false,
+        }),
+      });
+      this.map.getView().fit(extent);
+      this.map.on("singleclick", evt => {
+        const hitFeature = this.map.forEachFeatureAtPixel(evt.pixel, (feature, source) => {
+          return feature;
+        });
+        if (hitFeature) {
+          console.log(hitFeature.get("name"));
+          return;
+        }
+        const coords = {
+          x: evt.coordinate[0],
+          y: this.currentImageFileExif["ImageHeight"] - evt.coordinate[1]
+        };
+        console.log(coords);
+      });
+    }
   },
   mounted() {
   },
@@ -166,6 +217,7 @@ body {
 }
 
 #image {
-  width: 100%;
+  width: calc(100vw - 0.5rem);
+  height: calc(100vh - 12rem);
 }
 </style>

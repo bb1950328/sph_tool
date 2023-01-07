@@ -1,0 +1,180 @@
+[
+  {
+    "file_name": "p1_26.jpg",
+    "own_location": {
+      "x": 755907,
+      "y": 191392,
+      "z": 817
+    },
+    "reference_points": [
+      {
+        "imgCoords": [
+          1418,
+          1540
+        ],
+        "worldCoords": {
+          "x": 756691.07,
+          "y": 191250.19,
+          "z": 565.4
+        }
+      },
+      {
+        "imgCoords": [
+          3047,
+          1085
+        ],
+        "worldCoords": {
+          "x": 757082.66,
+          "y": 190406.00,
+          "z": 563.3
+        }
+      },
+      {
+        "imgCoords": [
+          2016,
+          1134
+        ],
+        "worldCoords": {
+          "x": 757174.96,
+          "y": 190893.61,
+          "z": 562.5
+        }
+      }
+    ]
+  },
+  {
+    "file_name": "p2_13.jpg",
+    "own_location": {
+      "x": 738481,
+      "y": 249508,
+      "z": 782
+    },
+    "reference_points": []
+  },
+  {
+    "file_name": "p2_26.jpg",
+    "own_location": {
+      "x": 738481,
+      "y": 249508,
+      "z": 782
+    },
+    "reference_points": []
+  },
+  {
+    "file_name": "p2_52.jpg",
+    "own_location": {
+      "x": 738481,
+      "y": 249508,
+      "z": 782
+    },
+    "reference_points": []
+  },
+  {
+    "file_name": "p3_13.jpg",
+    "own_location": {
+      "x": 738481,
+      "y": 249508,
+      "z": 782
+    },
+    "reference_points": []
+  },
+  {
+    "file_name": "p3_26.jpg",
+    "own_location": {
+      "x": 738481,
+      "y": 249508,
+      "z": 782
+    },
+    "reference_points": []
+  },
+  {
+    "file_name": "p3_52.jpg",
+    "own_location": {
+      "x": 738481,
+      "y": 249508,
+      "z": 782
+    },
+    "reference_points": []
+  },
+  {
+    "file_name": "p4_13.jpg",
+    "own_location": {
+      "x": 738554.19,
+      "y": 249215.83,
+      "z": 820
+    },
+    "reference_points": []
+  },
+  {
+    "file_name": "p4_26.jpg",
+    "own_location": {
+      "x": 738554.19,
+      "y": 249215.83,
+      "z": 820
+    },
+    "reference_points": []
+  },
+  {
+    "file_name": "p4_52.jpg",
+    "own_location": {
+      "x": 738554.19,
+      "y": 249215.83,
+      "z": 820
+    },
+    "reference_points": []
+  },
+  {
+    "file_name": "p5_13.jpg",
+    "own_location": {
+      "x": 738658.39,
+      "y": 248863.33,
+      "z": 828
+    },
+    "reference_points": []
+  },
+  {
+    "file_name": "p5_26.jpg",
+    "own_location": {
+      "x": 738658.39,
+      "y": 248863.33,
+      "z": 828
+    },
+    "reference_points": []
+  },
+  {
+    "file_name": "p5_52.jpg",
+    "own_location": {
+      "x": 738658.39,
+      "y": 248863.33,
+      "z": 828
+    },
+    "reference_points": []
+  },
+  {
+    "file_name": "p6_13.jpg",
+    "own_location": {
+      "x": 738658.39,
+      "y": 248863.33,
+      "z": 828
+    },
+    "reference_points": []
+  },
+  {
+    "file_name": "p6_26.jpg",
+    "own_location": {
+      "x": 738658.39,
+      "y": 248863.33,
+      "z": 828
+    },
+    "reference_points": []
+  },
+  {
+    "file_name": "p6_52.jpg",
+    "own_location": {
+      "x": 738658.39,
+      "y": 248863.33,
+      "z": 828
+    },
+    "reference_points": []
+  }
+]

@@ -1,3 +1,6 @@
+import * as math from "mathjs";
+import {ar} from "vitest/dist/global-e98f203b";
+
 const LV03_X_MIN = 485_000;
 const LV03_X_MAX = 835_000;
 const LV03_Y_MIN = 74_000;
@@ -182,3 +185,4 @@ export function createSwissTopoLink(coords: LV03coordinates, zoom: number = 8): 
 export function createGoogleMapsLink(coords: WGS84coordinates, zoom: number = 8): string {
     return `https://www.google.com/maps/place/${coords.latitude},${coords.longitude}/@${coords.latitude},${coords.longitude},${zoom}z`;
 }
+
