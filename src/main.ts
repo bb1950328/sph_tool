@@ -52,8 +52,11 @@ export const toolRoutes = [
     {path: "/coordinateCalculations", component: CoordinateCalculations, name: "Koordinatenberechnungen"},
     {path: "/mapView", component: MapView, name: "Karte"},
     {path: "/ballisticsCalculator", component: BallisticsCalculator, name: "Ballistik"},
-    {path: "/cameraGonio", component: CameraGonio, name: "Kamera-Gonio"},
 ];
+if (process.env.NODE_ENV === 'development') {
+    // @ts-ignore
+    toolRoutes.push({path: "/cameraGonio", component: CameraGonio, name: "Kamera-Gonio"});
+}
 
 const router = createRouter({
     history: createWebHashHistory(),
