@@ -1,6 +1,3 @@
-import * as math from "mathjs";
-import {ar} from "vitest/dist/global-e98f203b";
-
 const LV03_X_MIN = 485_000;
 const LV03_X_MAX = 835_000;
 const LV03_Y_MIN = 74_000;
@@ -186,3 +183,25 @@ export function createGoogleMapsLink(coords: WGS84coordinates, zoom: number = 8)
     return `https://www.google.com/maps/place/${coords.latitude},${coords.longitude}/@${coords.latitude},${coords.longitude},${zoom}z`;
 }
 
+export type StrNumIndex<TValue> = {
+    [key: string | number]: TValue
+}
+
+export function binarySearchArray<Element extends StrNumIndex<any>>(array: Element[], property: string | number, value: any): Element | null {
+    let start = 0;
+    let end = array.length - 1;
+
+    while (start <= end) {
+        const middle = Math.floor((start + end) / 2);
+
+        // NOTE the ".email" part added
+        if (array[middle][property] === value) {
+            return array[middle];
+        } else if (array[middle][property] < value) {
+            start = middle + 1;
+        } else {
+            end = middle - 1;
+        }
+    }
+    return null;
+}

@@ -10,12 +10,14 @@ export const allPoints = reactive(loadPoints());
 
 watch(allPoints, () => storePoints());
 
+const LOCAL_STORAGE_KEY = "points";
+
 function storePoints() {
-    localStorage.setItem("points", JSON.stringify(allPoints));
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(allPoints));
 }
 
 function loadPoints(): {[id: number]: Point} {
-    const points = localStorage.getItem("points");
+    const points = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (points === null) {
         return {
             1: {"description": "Kaserne Chur", "coordinates": {"x": 758603.97, "y": 190604.61, "z": 582.2}},
