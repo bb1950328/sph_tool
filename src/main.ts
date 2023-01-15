@@ -51,6 +51,7 @@ export const toolRoutes = [
     {path: "/pointList", component: PointList, name: "Punkteliste"},
     {path: "/coordinateCalculations", component: CoordinateCalculations, name: "Koordinatenberechnungen"},
     {path: "/mapView", component: MapView, name: "Karte"},
+    {path: "/userGrid", component: UserGrid, name: "Führungsraster"},
     {path: "/ballisticsCalculator", component: BallisticsCalculator, name: "Ballistik"},
 ];
 if (process.env.NODE_ENV === 'development') {
@@ -73,6 +74,7 @@ import BallisticsCalculator from "@/tools/BallisticsCalculator.vue";
 import CoordinateCalculations from "@/tools/CoordinateCalculations.vue";
 import MapView from "@/tools/MapView.vue";
 import CameraGonio from "@/tools/CameraGonio.vue";
+import UserGrid from "@/tools/UserGrid.vue";
 
 createApp(App)
     .component("font-awesome-icon", FontAwesomeIcon)

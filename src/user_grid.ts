@@ -1,4 +1,4 @@
-import {binarySearchArray, LV03coordinates} from "@/util";
+import {binarySearchArrayElement, binarySearchArrayIndex, LV03coordinates} from "@/util";
 import {reactive, watch} from "vue";
 
 enum NumberingScheme {
@@ -23,14 +23,12 @@ export interface UserGridDefinition {
 export const allUserGrids: UserGridDefinition[] = reactive(loadDefinitions());
 watch(allUserGrids, () => storeDefinitions());
 
-const LOCAL_STORAGE_KEY = "userGrids";
-
 function storeDefinitions() {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(allUserGrids));
+    localStorage.setItem("userGrids", JSON.stringify(allUserGrids));
 }
 
 function loadDefinitions(): UserGridDefinition[] {
-    const gridsStr = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const gridsStr = localStorage.getItem("userGrids");
     if (gridsStr === null) {
         return [];
     } else {
@@ -41,15 +39,12 @@ function loadDefinitions(): UserGridDefinition[] {
 }
 
 export function getUserGridDefinition(id: number): UserGridDefinition | null {
-    return binarySearchArray(allUserGrids, "id", id);
+    return binarySearchArrayElement(allUserGrids, "id", id);
 }
 
-export function addUserGridDefinition(): UserGridDefinition {
-    const newId = allUserGrids.length == 0
-        ? 1
-        : allUserGrids[allUserGrids.length - 1].id + 1;
+export function createNewUserGridDefinition() {
     const newDef: UserGridDefinition = {
-        id: newId,
+        id: -1,
         name: "Neues Führungsraster",
         numRows: 10,
         numCols: 10,
@@ -61,15 +56,28 @@ export function addUserGridDefinition(): UserGridDefinition {
         refPoint0Identifier: "",
         refPoint1Identifier: "",
     };
-    allUserGrids.push(newDef);
     return newDef;
 }
 
-export function deleteUserGridDefinition(id: number): void {
-    for (let i = 0; i < allUserGrids.length; i++) {
-        if (allUserGrids[i].id == id) {
-            allUserGrids.splice(i, 1);
-            return;
+export function saveUserGridDefinition(def: UserGridDefinition) {
+    if (def.id < 0) {
+        def.id = allUserGrids.length == 0
+            ? 1
+            : allUserGrids[allUserGrids.length - 1].id + 1;
+        allUserGrids.push(def);
+    } else {
+        const idx = binarySearchArrayIndex(allUserGrids, "id", def.id);
+        if (idx != null) {
+            allUserGrids[idx] = def;
+        } else {
+            allUserGrids.push(def);
         }
+    }
+}
+
+export function deleteUserGridDefinition(id: number): void {
+    const idx = binarySearchArrayIndex(allUserGrids, "id", id);
+    if (idx != null) {
+        allUserGrids.splice(idx, 1);
     }
 }

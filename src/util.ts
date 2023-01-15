@@ -187,16 +187,22 @@ export type StrNumIndex<TValue> = {
     [key: string | number]: TValue
 }
 
-export function binarySearchArray<Element extends StrNumIndex<any>>(array: Element[], property: string | number, value: any): Element | null {
+export function binarySearchArrayElement<Element extends StrNumIndex<any>>(array: Element[], property: string | number, value: any): Element | null {
+    const idx = binarySearchArrayIndex(array, property, value);
+    return idx == null
+        ? null
+        : array[idx];
+}
+
+export function binarySearchArrayIndex<Element extends StrNumIndex<any>>(array: Element[], property: string | number, value: any): number | null {
     let start = 0;
     let end = array.length - 1;
 
     while (start <= end) {
         const middle = Math.floor((start + end) / 2);
 
-        // NOTE the ".email" part added
         if (array[middle][property] === value) {
-            return array[middle];
+            return middle;
         } else if (array[middle][property] < value) {
             start = middle + 1;
         } else {
@@ -204,4 +210,8 @@ export function binarySearchArray<Element extends StrNumIndex<any>>(array: Eleme
         }
     }
     return null;
+}
+
+export function deepClone<T>(obj: T): T {
+    return JSON.parse(JSON.stringify(obj));
 }
