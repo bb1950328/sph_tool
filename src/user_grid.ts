@@ -42,8 +42,8 @@ export function getUserGridDefinition(id: number): UserGridDefinition | null {
     return binarySearchArrayElement(allUserGrids, "id", id);
 }
 
-export function createNewUserGridDefinition() {
-    const newDef: UserGridDefinition = {
+export function createNewUserGridDefinition(): UserGridDefinition {
+    return {
         id: -1,
         name: "Neues Führungsraster",
         numRows: 10,
@@ -56,7 +56,6 @@ export function createNewUserGridDefinition() {
         refPoint0Identifier: "",
         refPoint1Identifier: "",
     };
-    return newDef;
 }
 
 export function saveUserGridDefinition(def: UserGridDefinition) {

@@ -213,5 +213,8 @@ export function binarySearchArrayIndex<Element extends StrNumIndex<any>>(array: 
 }
 
 export function deepClone<T>(obj: T): T {
+    if (obj === undefined || obj === null)  {
+        return obj;
+    }
     return JSON.parse(JSON.stringify(obj));
 }

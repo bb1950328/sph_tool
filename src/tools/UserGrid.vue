@@ -44,7 +44,9 @@
             </button>
           </div>
           <div class="modal-body">
-            <UserGridForm v-model:value="currentlyEditingGrid"/>
+            <UserGridForm :value="currentlyEditingGrid"
+                          @grid-change="editingGridChanged"
+                          v-if="currentlyEditingGrid!=null"/>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" @click="saveChangesFromModal();modal.hide()">
@@ -93,7 +95,10 @@ export default {
     startEditGrid(id) {
       this.currentlyEditingGrid = deepClone(getUserGridDefinition(id));
       this.modal.show();
-    }
+    },
+    editingGridChanged(newGrid) {
+      this.currentlyEditingGrid = newGrid;
+    },
   },
   data() {
     return {
