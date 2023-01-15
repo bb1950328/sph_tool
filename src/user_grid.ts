@@ -1,7 +1,7 @@
 import {binarySearchArrayElement, binarySearchArrayIndex, LV03coordinates} from "@/util";
 import {reactive, watch} from "vue";
 
-enum NumberingScheme {
+export enum NumberingScheme {
     NUMBERS,
     EXCEL_LETTERS,
 }
