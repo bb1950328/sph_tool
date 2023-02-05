@@ -30,11 +30,13 @@
       <div class="input-group" id="cornerCellIdentifierGroup">
         <div class="col pe-3">
           <label for="inpTopLeftIdentifier" class="form-label">oben links</label>
-          <input id="inpTopLeftIdentifier" class="form-control" v-model="mutableValue.topLeftIdentifier" ref="topLeftIdentifier" required>
+          <input id="inpTopLeftIdentifier" class="form-control" v-model="mutableValue.topLeftIdentifier"
+                 ref="topLeftIdentifier" required>
         </div>
         <div class="col">
           <label for="inpBottomRightIdentifier" class="form-label">unten rechts</label>
-          <input id="inpBottomRightIdentifier" class="form-control" v-model="mutableValue.bottomRightIdentifier" ref="bottomRightIdentifier" required>
+          <input id="inpBottomRightIdentifier" class="form-control" v-model="mutableValue.bottomRightIdentifier"
+                 ref="bottomRightIdentifier" required>
         </div>
       </div>
     </div>
@@ -56,12 +58,12 @@
         <label for="refPoint0Input" class="form-label">Koordinaten</label>
         <PointInput id="refPoint0Input"
                     :with-height="false"
-                    :value="mutableValue.refPoint0Cooords"
-                    @value-change="val => mutableValue.refPoint0Cooords = val"></PointInput>
+                    :value="mutableValue.refPoint0Coords"
+                    @value-change="val => mutableValue.refPoint0Coords = val"></PointInput>
       </div>
       <div>
         <label for="refPoint0IdentifierInput" class="form-label">Bezeichnung</label>
-        <input v-model="mutableValue.refPoint0Identifier" class="form-control" required>
+        <input v-model="mutableValue.refPoint0Identifier" class="form-control" ref="refPoint0Identifier" required>
       </div>
     </div>
     <div class="mb-3">
@@ -70,30 +72,34 @@
         <label for="refPoint1Input" class="form-label">Koordinaten</label>
         <PointInput id="refPoint1Input"
                     :with-height="false"
-                    :value="mutableValue.refPoint1Cooords"
-                    @value-change="val => mutableValue.refPoint1Cooords = val"></PointInput>
+                    :value="mutableValue.refPoint1Coords"
+                    @value-change="val => mutableValue.refPoint1Coords = val"></PointInput>
       </div>
       <div>
         <label for="refPoint1IdentifierInput" class="form-label">Bezeichnung</label>
-        <input v-model="mutableValue.refPoint1Identifier" class="form-control" required>
+        <input v-model="mutableValue.refPoint1Identifier" class="form-control" ref="refPoint1Identifier" required>
       </div>
     </div>
     <div class="mb-3">
       <label class="form-label">Kontrolle</label>
       <div class="row">
         <span class="col-3">Zeilen</span>
-        <span class="col">{{ rowTitles }}</span>
+        <span class="col">{{ checkValues.rowTitles }}</span>
       </div>
       <div class="row">
         <span class="col-3">Spalten</span>
-        <span class="col">{{ columnTitles }}</span>
+        <span class="col">{{ checkValues.columnTitles }}</span>
+      </div>
+      <div class="row">
+        <span class="col-3">Zellengrösse</span>
+        <span class="col">{{ checkValues.cellSizeX }} &times; {{ checkValues.cellSizeY }} m</span>
       </div>
     </div>
   </form>
 </template>
 
 <script lang="ts">
-import {getAxisTitles, NumberingScheme, splitIdentifier, UserGridDefinition} from "@/user_grid_logic";
+import {getAxisTitles, getCellSize, NumberingScheme, splitIdentifier, UserGridDefinition} from "@/user_grid_logic";
 import {PropType, reactive} from "vue";
 import {deepClone} from "@/util";
 import PointInput from "@/components/PointInput.vue";
@@ -122,6 +128,8 @@ export default {
       handler() {
         this.validateIdentifierValue(this.$refs.topLeftIdentifier, this.mutableValue.topLeftIdentifier);
         this.validateIdentifierValue(this.$refs.bottomRightIdentifier, this.mutableValue.bottomRightIdentifier);
+        this.validateIdentifierValue(this.$refs.refPoint0Identifier, this.mutableValue.refPoint0Identifier);
+        this.validateIdentifierValue(this.$refs.refPoint1Identifier, this.mutableValue.refPoint1Identifier);
         this.$refs.form.checkValidity();
         this.$emit("value-change", this.mutableValue);
       },
@@ -129,7 +137,7 @@ export default {
     },
     hasQuadrantLetters() {
       this.mutableValue.cellQuadrantLetters = this.$refs.inpQuadrantLettersActive.value
-          ? ["A", "B", "C", "D"]
+          ? ["A", "B", "D", "C"]
           : null;
     }
   },
@@ -151,11 +159,25 @@ export default {
     }
   },
   computed: {
-    columnTitles() {
-      return this.arrayElementsEllipsis(getAxisTitles(this.mutableValue, 0));
-    },
-    rowTitles() {
-      return this.arrayElementsEllipsis(getAxisTitles(this.mutableValue, 1));
+    /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
+    checkValues() {
+      const values = {
+        columnTitles: "",
+        rowTitles: "",
+        cellSizeX: "",
+        cellSizeY: "",
+      }
+      try {
+        values.rowTitles = this.arrayElementsEllipsis(getAxisTitles(this.mutableValue, 0));
+        values.columnTitles = this.arrayElementsEllipsis(getAxisTitles(this.mutableValue, 1));
+      } catch (UserGridIdentifierFormatError) {
+      }
+      const cellSize = getCellSize(this.mutableValue);
+      if (cellSize != null) {
+        values.cellSizeX = Math.round(cellSize[0]).toString();
+        values.cellSizeY = Math.round(cellSize[1]).toString();
+      }
+      return values;
     },
   }
 }

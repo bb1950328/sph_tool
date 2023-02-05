@@ -11,10 +11,14 @@ export interface UserGridDefinition {
     name: string,
     rowNumberingScheme: NumberingScheme,
     colNumberingScheme: NumberingScheme,
+    /**
+     * 0 1
+     * 2 3
+     */
     cellQuadrantLetters: [string, string, string, string] | null;
     topLeftIdentifier: string,
     bottomRightIdentifier: string,
-    refPoint0Cooords: LV03coordinates | null,
+    refPoint0Coords: LV03coordinates | null,
     refPoint1Coords: LV03coordinates | null,
     refPoint0Identifier: string,
     refPoint1Identifier: string,
@@ -105,7 +109,7 @@ export function identifierToIndex(def: UserGridDefinition, identifier: string): 
     const identifierBlocks = splitIdentifier(def, identifier);
     return {
         row: axisIdentifierToIndex(def, 0, identifierBlocks[0]),
-        column: axisIdentifierToIndex(def, 0, identifierBlocks[1]),
+        column: axisIdentifierToIndex(def, 1, identifierBlocks[1]),
         quadrant: def.cellQuadrantLetters !== null
             ? def.cellQuadrantLetters.indexOf(identifierBlocks[2])
             : 0,
@@ -139,4 +143,19 @@ export function getAxisTitles(def: UserGridDefinition, axis: number): string[] {
         titles.push(axisIndexToIdentifier(def, axis, i));
     }
     return titles;
+}
+
+export function getCellSize(def: UserGridDefinition): [number, number] | null {
+    if (def.refPoint0Coords==null || def.refPoint1Coords==null) {
+        return null;
+    }
+    const idx0 = identifierToIndex(def, def.refPoint0Identifier);
+    const idx1 = identifierToIndex(def, def.refPoint1Identifier);
+    const distX = def.refPoint1Coords.x - def.refPoint0Coords.x;
+    const distY = def.refPoint1Coords.y - def.refPoint0Coords.y;
+    console.log(idx0, idx1, distX, distY);
+    return [
+        distX / (idx1.column-idx0.column),
+        distY / (idx1.row-idx0.row),
+    ];
 }
