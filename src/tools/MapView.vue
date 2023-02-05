@@ -299,23 +299,39 @@ export default {
 
     this.map.on('moveend', () => {
       this.currentMapZoom = this.map.getView().getZoom();
+      const pos = {
+        center: this.map.getView().getCenter(),
+        zoom: this.map.getView().getZoom(),
+        rotation: this.map.getView().getRotation(),
+      };
+      localStorage.setItem("mapPosition", JSON.stringify(pos));
     });
 
     this.map.on("singleclick", this.handleSingleClickOnMap);
 
-    navigator.geolocation.getCurrentPosition(position => {
-          let posLonLat = [position.coords.longitude, position.coords.latitude];
-          this.map.getView().setCenter(proj_transform(posLonLat, 'EPSG:4326', 'EPSG:3857'));
-          console.info("got initial map center from GPS ", posLonLat);
-        },
-        err => {
-          console.info("didn't get GPS position: ", err);
-        },
-        {
-          enableHighAccuracy: true,
-          maximumAge: 100_000,
-        }
-    );
+    const lsMapPosJson = localStorage.getItem("mapPosition");
+    if (lsMapPosJson) {
+      const lsMapPos = JSON.parse(lsMapPosJson);
+      this.map.getView().setCenter(lsMapPos.center);
+      this.map.getView().setZoom(lsMapPos.zoom);
+      this.map.getView().setRotation(lsMapPos.rotation);
+      console.info("got initial map center, zoom and rotation from localStorage");
+    } else {
+      navigator.geolocation.getCurrentPosition(position => {
+            let posLonLat = [position.coords.longitude, position.coords.latitude];
+            this.map.getView().setCenter(proj_transform(posLonLat, 'EPSG:4326', 'EPSG:3857'));
+            console.info("got initial map center from GPS ", posLonLat);
+          },
+          err => {
+            console.info("didn't get GPS position: ", err);
+          },
+          {
+            enableHighAccuracy: true,
+            maximumAge: 100_000,
+          }
+      );
+
+    }
   },
   methods: {
     LV03toWGS84,
