@@ -1,4 +1,4 @@
-import {LV03toWGS84, WGS84toLV03} from "@/util";
+import {LV03toWGS84, parseLV03, WGS84toLV03} from "@/util";
 
 import {expect, test} from "vitest";
 import * as math from "mathjs";
@@ -20,6 +20,17 @@ test("LV03toWGS84", () => {
     expect(result.longitude).closeTo(8 + 43 / 60 + 49.79 / 3600, 5);
     expect(result.height).closeTo(650.60, 1);
 });
+
+test("parseLV03", () => {
+    const result0 = parseLV03("123 456 / 987 654");
+    expect(result0.x).toEqual(123456);
+    expect(result0.y).toEqual(987654);
+    expect(result0.z).toEqual(0);
+    const result1 = parseLV03("123 456 / 987 654 / 1234");
+    expect(result1.x).toEqual(123456);
+    expect(result1.y).toEqual(987654);
+    expect(result1.z).toEqual(1234);
+})
 
 test("matrixMultiplication", () => {
     const M = [

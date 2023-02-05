@@ -1,24 +1,9 @@
-import {binarySearchArrayElement, binarySearchArrayIndex, LV03coordinates} from "@/util";
+import {binarySearchArrayElement, binarySearchArrayIndex, isDigits, LV03coordinates} from "@/util";
 import {reactive, watch} from "vue";
+import {isNumeric} from "mathjs";
+import {d} from "vitest/dist/index-6e18a03a";
+import {NumberingScheme, UserGridDefinition} from "@/user_grid_logic";
 
-export enum NumberingScheme {
-    NUMBERS,
-    EXCEL_LETTERS,
-}
-
-export interface UserGridDefinition {
-    id: number,
-    name: string,
-    numRows: number,
-    numCols: number,
-    rowNumberingScheme: NumberingScheme,
-    colNumberingScheme: NumberingScheme,
-    cellQuadrantLetters: [string, string, string, string] | null;
-    refPoint0Cooords: LV03coordinates | null,
-    refPoint1Coords: LV03coordinates | null,
-    refPoint0Identifier: string,
-    refPoint1Identifier: string,
-}
 
 export const allUserGrids: UserGridDefinition[] = reactive(loadDefinitions());
 watch(allUserGrids, () => storeDefinitions());
@@ -46,11 +31,11 @@ export function createNewUserGridDefinition(): UserGridDefinition {
     return {
         id: -1,
         name: "Neues Führungsraster",
-        numRows: 10,
-        numCols: 10,
         rowNumberingScheme: NumberingScheme.NUMBERS,
         colNumberingScheme: NumberingScheme.EXCEL_LETTERS,
         cellQuadrantLetters: ["A", "B", "C", "D"],
+        topLeftIdentifier: "A1",
+        bottomRightIdentifier: "J10",
         refPoint0Cooords: null,
         refPoint1Coords: null,
         refPoint0Identifier: "",

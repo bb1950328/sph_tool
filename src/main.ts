@@ -20,6 +20,7 @@ import {
     faSlash,
     faCameraRotate,
     faCamera,
+    faList,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -39,6 +40,7 @@ library.add(
     faSlash,
     faCameraRotate,
     faCamera,
+    faList
 );
 
 import "bootstrap/dist/css/bootstrap.min.css"

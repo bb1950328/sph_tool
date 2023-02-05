@@ -1,8 +1,8 @@
-const LV03_X_MIN = 485_000;
-const LV03_X_MAX = 835_000;
-const LV03_Y_MIN = 74_000;
-const LV03_Y_MAX = 296_000;
-const LV03_XY_MIDDLE = (LV03_Y_MAX + LV03_X_MIN) / 2; // if a coordinate is below that value, it's more likely to be a Y value, otherwise an X value
+export const LV03_X_MIN = 485_000;
+export const LV03_X_MAX = 835_000;
+export const LV03_Y_MIN = 74_000;
+export const LV03_Y_MAX = 296_000;
+export const LV03_XY_MIDDLE = (LV03_Y_MAX + LV03_X_MIN) / 2; // if a coordinate is below that value, it's more likely to be a Y value, otherwise an X value
 
 export interface LV03coordinates {
     x: number;
@@ -136,6 +136,16 @@ export function getHeightFromSwissTopo(x: number, y: number, successCallback: (h
         .catch(errorCallback);
 }
 
+export function parseLV03(text: string): LV03coordinates {
+    text = text.replaceAll(" ", "");
+    const elements = text.split("/");
+    return {
+        x: parseInt(elements[0]),
+        y: elements.length > 2 ? parseInt(elements[1]) : 0,
+        z: elements.length > 2 ? parseInt(elements[2]) : 0,
+    };
+}
+
 export function extractCoordinatesFromString(text: string): LV03coordinates {
     //todo unit tests for this function
     const regex = new RegExp(/[12]?[' ]?(\d{3})[' ]?(\d{3})(\.\d+)?/, "g");
@@ -213,8 +223,12 @@ export function binarySearchArrayIndex<Element extends StrNumIndex<any>>(array: 
 }
 
 export function deepClone<T>(obj: T): T {
-    if (obj === undefined || obj === null)  {
+    if (obj === undefined || obj === null) {
         return obj;
     }
     return JSON.parse(JSON.stringify(obj));
+}
+
+export function isDigits(text: string): boolean {
+    return /^\d+$/.test(text);
 }

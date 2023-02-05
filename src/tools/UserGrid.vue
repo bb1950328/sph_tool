@@ -45,8 +45,9 @@
           </div>
           <div class="modal-body">
             <UserGridForm :value="currentlyEditingGrid"
-                          @grid-change="editingGridChanged"
-                          v-if="currentlyEditingGrid!=null"/>
+                          @value-change="editingGridChanged"
+                          v-if="currentlyEditingGrid!=null"
+                          :key="currentlyEditingGrid.id"/>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" @click="saveChangesFromModal();modal.hide()">
@@ -103,7 +104,7 @@ export default {
   data() {
     return {
       allUserGrids: allUserGrids,
-      currentlyEditingGrid: createNewUserGridDefinition(),
+      currentlyEditingGrid: null,
       modal: null,
     }
   },
