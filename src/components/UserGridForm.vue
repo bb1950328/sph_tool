@@ -10,7 +10,7 @@
         <div class="col-6 pe-3">
           <label for="inpColNumberScheme">Spalten</label>
           <select class="form-select" aria-label="Spaltennummerierung"
-                  v-model="mutableValue.colNumberingScheme" id="inpColNumberScheme" required>
+                  v-model="mutableValue.xAxis.numberingScheme" id="inpColNumberScheme" required>
             <option :value="NumberingScheme.EXCEL_LETTERS">Buchstaben</option>
             <option :value="NumberingScheme.NUMBERS">Zahlen</option>
           </select>
@@ -18,7 +18,7 @@
         <div class="col-6">
           <label for="inpRowNumberScheme">Zeilen</label>
           <select class="form-select" aria-label="Zeilennummerierung"
-                  v-model="mutableValue.rowNumberingScheme" id="inpRowNumberScheme" required>
+                  v-model="mutableValue.yAxis.numberingScheme" id="inpRowNumberScheme" required>
             <option :value="NumberingScheme.EXCEL_LETTERS">Buchstaben</option>
             <option :value="NumberingScheme.NUMBERS">Zahlen</option>
           </select>
@@ -26,17 +26,30 @@
       </div>
     </div>
     <div class="mb-3">
-      <label for="cornerCellIdentifierGroup" class="form-label">Zellbezeichungen Ecken</label>
       <div class="input-group" id="cornerCellIdentifierGroup">
         <div class="col pe-3">
-          <label for="inpTopLeftIdentifier" class="form-label">oben links</label>
-          <input id="inpTopLeftIdentifier" class="form-control" v-model="mutableValue.topLeftIdentifier"
-                 ref="topLeftIdentifier" required>
+          <label for="firstColName" class="form-label">erster Spaltenname</label>
+          <input id="firstColName" class="form-control" v-model="mutableValue.xAxis.firstIdentifier"
+                 ref="firstColName" required>
         </div>
         <div class="col">
-          <label for="inpBottomRightIdentifier" class="form-label">unten rechts</label>
-          <input id="inpBottomRightIdentifier" class="form-control" v-model="mutableValue.bottomRightIdentifier"
-                 ref="bottomRightIdentifier" required>
+          <label for="lastColName" class="form-label">letzter Spaltenname</label>
+          <input id="lastColName" class="form-control" v-model="mutableValue.xAxis.lastIdentifier"
+                 ref="lastColName" required>
+        </div>
+      </div>
+    </div>
+    <div class="mb-3">
+      <div class="input-group" id="cornerCellIdentifierGroup">
+        <div class="col pe-3">
+          <label for="firstRowName" class="form-label">erster Zeilenname</label>
+          <input id="firstRowName" class="form-control" v-model="mutableValue.yAxis.firstIdentifier"
+                 ref="firstRowName" required>
+        </div>
+        <div class="col">
+          <label for="lastRowName" class="form-label">letzter Zeilenname</label>
+          <input id="lastRowName" class="form-control" v-model="mutableValue.yAxis.lastIdentifier"
+                 ref="lastRowName" required>
         </div>
       </div>
     </div>
@@ -92,14 +105,14 @@
       </div>
       <div class="row">
         <span class="col-3">Zellengrösse</span>
-        <span class="col">{{ checkValues.cellSizeX }} &times; {{ checkValues.cellSizeY }} m</span>
+        <span class="col">{{ checkValues.cellSize }} m</span>
       </div>
     </div>
   </form>
 </template>
 
 <script lang="ts">
-import {getAxisTitles, getCellSize, NumberingScheme, splitIdentifier, UserGridDefinition} from "@/user_grid_logic";
+import {NumberingScheme, UserGrid} from "@/user_grid_logic";
 import {PropType, reactive} from "vue";
 import {deepClone} from "@/util";
 import PointInput from "@/components/PointInput.vue";
@@ -108,7 +121,7 @@ export default {
   components: {PointInput},
   props: {
     value: {
-      type: Object as PropType<UserGridDefinition>,
+      type: Object as PropType<UserGrid>,
       required: true,
     }
   },
@@ -116,7 +129,7 @@ export default {
     "value-change",
   ],
   data() {
-    const mutableValue = reactive(deepClone(this.value));
+    const mutableValue = reactive(new UserGrid(this.value));
     return {
       mutableValue,
       hasQuadrantLetters: this.value.cellQuadrantLetters != null,
@@ -126,8 +139,9 @@ export default {
   watch: {
     mutableValue: {
       handler() {
-        this.validateIdentifierValue(this.$refs.topLeftIdentifier, this.mutableValue.topLeftIdentifier);
-        this.validateIdentifierValue(this.$refs.bottomRightIdentifier, this.mutableValue.bottomRightIdentifier);
+        //todo validate first and last identifier of both axes
+        //this.validateIdentifierValue(this.$refs.topLeftIdentifier, this.mutableValue.topLeftIdentifier);
+        //this.validateIdentifierValue(this.$refs.bottomRightIdentifier, this.mutableValue.bottomRightIdentifier);
         this.validateIdentifierValue(this.$refs.refPoint0Identifier, this.mutableValue.refPoint0Identifier);
         this.validateIdentifierValue(this.$refs.refPoint1Identifier, this.mutableValue.refPoint1Identifier);
         this.$refs.form.checkValidity();
@@ -152,7 +166,7 @@ export default {
     validateIdentifierValue(element: HTMLInputElement, identifierValue: string) {
       element.setCustomValidity("");
       try {
-        splitIdentifier(this.mutableValue, identifierValue);
+        this.mutableValue.splitIdentifier(identifierValue);
       } catch (UserGridIdentifierFormatError) {
         element.setCustomValidity("Ungültig");
       }
@@ -164,18 +178,17 @@ export default {
       const values = {
         columnTitles: "",
         rowTitles: "",
-        cellSizeX: "",
-        cellSizeY: "",
+        cellSize: "",
       }
       try {
-        values.rowTitles = this.arrayElementsEllipsis(getAxisTitles(this.mutableValue, 0));
-        values.columnTitles = this.arrayElementsEllipsis(getAxisTitles(this.mutableValue, 1));
+        values.columnTitles = this.arrayElementsEllipsis(this.mutableValue.xAxis.getTitles());
+        values.rowTitles = this.arrayElementsEllipsis(this.mutableValue.yAxis.getTitles());
       } catch (UserGridIdentifierFormatError) {
       }
-      const cellSize = getCellSize(this.mutableValue);
-      if (cellSize != null) {
-        values.cellSizeX = Math.round(cellSize[0]).toString();
-        values.cellSizeY = Math.round(cellSize[1]).toString();
+      try {
+        const cellSize = this.mutableValue.getCellSize();
+        values.cellSize = cellSize != null ? Math.round(cellSize).toString() : "";
+      } catch (UserGridIdentifierFormatError){
       }
       return values;
     },

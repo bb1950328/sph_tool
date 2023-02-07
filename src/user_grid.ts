@@ -1,37 +1,42 @@
-import {binarySearchArrayElement, binarySearchArrayIndex, isDigits, LV03coordinates} from "@/util";
+import {binarySearchArrayElement, binarySearchArrayIndex} from "@/util";
 import {reactive, watch} from "vue";
-import {isNumeric} from "mathjs";
-import {d} from "vitest/dist/index-6e18a03a";
-import {NumberingScheme, UserGrid, UserGridDefinition} from "@/user_grid_logic";
+import {UserGrid, UserGridDefinition} from "@/user_grid_logic";
 
 
-export const allUserGrids: UserGridDefinition[] = reactive(loadDefinitions());
+export const allUserGrids: UserGrid[] = reactive(loadDefinitions()) as UserGrid[];
 watch(allUserGrids, () => storeDefinitions());
 
 function storeDefinitions() {
     localStorage.setItem("userGrids", JSON.stringify(allUserGrids));
 }
 
-function loadDefinitions(): UserGridDefinition[] {
+function loadDefinitions(): UserGrid[] {
     const gridsStr = localStorage.getItem("userGrids");
     if (gridsStr === null) {
         return [];
     } else {
         const parsedGrids = JSON.parse(gridsStr);
         parsedGrids.sort((a: UserGridDefinition, b: UserGridDefinition) => a.id - b.id);
-        return parsedGrids;
+        const result = [];
+        for (const item of parsedGrids) {
+            result.push(new UserGrid(item));
+        }
+        return result;
     }
 }
 
-export function getUserGridDefinition(id: number): UserGridDefinition | null {
-    return binarySearchArrayElement(allUserGrids, "id", id);
+export function getUserGridDefinition(id: number): UserGrid | null {
+    return binarySearchArrayElement(allUserGrids, "id", id) as UserGrid;
 }
 
-export function createNewUserGridDefinition(): UserGridDefinition {
+/**
+ * @deprecated use constructor directly
+ */
+export function createNewUserGridDefinition(): UserGrid {
     return new UserGrid();
 }
 
-export function saveUserGridDefinition(def: UserGridDefinition) {
+export function saveUserGridDefinition(def: UserGrid) {
     if (def.id < 0) {
         def.id = allUserGrids.length == 0
             ? 1

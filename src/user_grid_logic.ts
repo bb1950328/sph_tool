@@ -28,22 +28,28 @@ export interface UserGrid extends UserGridDefinition {
 
 export class UserGrid implements UserGridDefinition {
 
-    constructor() {
+    constructor(def?: UserGridDefinition) {
         this.id = -1;
         this.name = "Neues Führungsraster";
-        this.xAxis = new UserGridAxis(NumberingScheme.EXCEL_LETTERS);
-        this.yAxis = new UserGridAxis(NumberingScheme.NUMBERS);
+        this.xAxis = new UserGridAxis({numberingScheme: NumberingScheme.EXCEL_LETTERS});
+        this.yAxis = new UserGridAxis({numberingScheme: NumberingScheme.NUMBERS});
         this.cellQuadrantLetters = ["A", "B", "D", "C"];
         this.refPoint0Coords = {x: 0, y: 0, z: 0};
         this.refPoint1Coords = {x: 0, y: 0, z: 0};
         this.refPoint0Identifier = "";
         this.refPoint1Identifier = "";
+        console.log(this.xAxis, this.yAxis);
+        if (def) {
+            Object.assign(this, def);
+            this.xAxis = new UserGridAxis(def.xAxis);
+            this.yAxis = new UserGridAxis(def.yAxis);
+        }
     }
 
     splitIdentifier(identifier: string): string[] {
         const blocks: string[] = [];
         if (!identifier) {
-            return blocks;
+            throw new UserGridIdentifierFormatError(identifier);
         }
         let start = 0;
         let isnum = isDigits(identifier[0]);
@@ -72,8 +78,8 @@ export class UserGrid implements UserGridDefinition {
     identifierToIndex(def: UserGridDefinition, identifier: string): UserGridCellIndex {
         const identifierBlocks = this.splitIdentifier(identifier);
         return {
-            xColumn: this.xAxis.convertIdentifierToIndex(identifierBlocks[1]),
-            yRow: this.yAxis.convertIdentifierToIndex(identifierBlocks[0]),
+            xColumn: this.xAxis.convertIdentifierToIndex(identifierBlocks[0]),
+            yRow: this.yAxis.convertIdentifierToIndex(identifierBlocks[1]),
             quadrant: def.cellQuadrantLetters !== null
                 ? def.cellQuadrantLetters.indexOf(identifierBlocks[2])
                 : -1,
@@ -92,7 +98,9 @@ export class UserGrid implements UserGridDefinition {
         const coordDiffX = this.refPoint1Coords.x - this.refPoint0Coords.x;
         const coordDiffY = this.refPoint1Coords.y - this.refPoint0Coords.y;
 
-        return Math.sqrt(math.square(coordDiffX) + math.square(coordDiffY)) / Math.sqrt(math.square(cellDiffX) + math.square(cellDiffY));
+        const coordDistance = Math.sqrt(math.square(coordDiffX) + math.square(coordDiffY));
+        const cellDistance = Math.sqrt(math.square(cellDiffX) + math.square(cellDiffY));
+        return coordDistance / cellDistance;
     }
 
     validateValues(): string[] {
@@ -132,20 +140,23 @@ export class UserGrid implements UserGridDefinition {
     }
 }
 
-export class UserGridAxis {
+export interface UserGridAxisDefinition {
     numberingScheme: NumberingScheme;
     firstIdentifier: string;
     lastIdentifier: string;
+}
+export interface UserGridAxis extends UserGridAxisDefinition {}
 
-    constructor(numberingScheme: NumberingScheme) {
-        this.numberingScheme = numberingScheme;
-        if (numberingScheme == NumberingScheme.NUMBERS) {
+export class UserGridAxis {
+    constructor(def: {numberingScheme: NumberingScheme, firstIdentifier?: string, lastIdentifier?: string}) {
+        if (def.numberingScheme == NumberingScheme.NUMBERS) {
             this.firstIdentifier = "1";
             this.lastIdentifier = "10";
         } else {
             this.firstIdentifier = "A";
             this.lastIdentifier = "J";
         }
+        Object.assign(this, def);
     }
 
     firstIdentifierIndexWithoutOffset(): number {
@@ -238,15 +249,3 @@ export function numberToExcelLetter(num: number): string {
     }
     return result;
 }
-
-/*function axisIdentifierToIndex(def: UserGridDefinition, axis: number, identifier: string): number {
-    const numberingScheme = axis === 0
-        ? def.rowNumberingScheme
-        : def.colNumberingScheme;
-    const firstIdentifier = splitIdentifier(def, def.topLeftIdentifier)[axis];
-    if (numberingScheme === NumberingScheme.NUMBERS) {
-        return parseInt(identifier) - parseInt(firstIdentifier);
-    } else {
-        return excelLettersToNumber(identifier) - excelLettersToNumber(firstIdentifier);
-    }
-}*/

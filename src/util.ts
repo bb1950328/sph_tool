@@ -197,14 +197,14 @@ export type StrNumIndex<TValue> = {
     [key: string | number]: TValue
 }
 
-export function binarySearchArrayElement<Element extends StrNumIndex<any>>(array: Element[], property: string | number, value: any): Element | null {
+export function binarySearchArrayElement<Element extends StrNumIndex<any>>(array: ArrayLike<Element>, property: string | number, value: any): Element | null {
     const idx = binarySearchArrayIndex(array, property, value);
     return idx == null
         ? null
         : array[idx];
 }
 
-export function binarySearchArrayIndex<Element extends StrNumIndex<any>>(array: Element[], property: string | number, value: any): number | null {
+export function binarySearchArrayIndex<Element extends StrNumIndex<any>>(array: ArrayLike<Element>, property: string | number, value: any): number | null {
     let start = 0;
     let end = array.length - 1;
 
