@@ -2,7 +2,7 @@ import {binarySearchArrayElement, binarySearchArrayIndex, isDigits, LV03coordina
 import {reactive, watch} from "vue";
 import {isNumeric} from "mathjs";
 import {d} from "vitest/dist/index-6e18a03a";
-import {NumberingScheme, UserGridDefinition} from "@/user_grid_logic";
+import {NumberingScheme, UserGrid, UserGridDefinition} from "@/user_grid_logic";
 
 
 export const allUserGrids: UserGridDefinition[] = reactive(loadDefinitions());
@@ -28,19 +28,7 @@ export function getUserGridDefinition(id: number): UserGridDefinition | null {
 }
 
 export function createNewUserGridDefinition(): UserGridDefinition {
-    return {
-        id: -1,
-        name: "Neues Führungsraster",
-        rowNumberingScheme: NumberingScheme.NUMBERS,
-        colNumberingScheme: NumberingScheme.EXCEL_LETTERS,
-        cellQuadrantLetters: ["A", "B", "D", "C"],
-        topLeftIdentifier: "A1",
-        bottomRightIdentifier: "J10",
-        refPoint0Coords: null,
-        refPoint1Coords: null,
-        refPoint0Identifier: "",
-        refPoint1Identifier: "",
-    };
+    return new UserGrid();
 }
 
 export function saveUserGridDefinition(def: UserGridDefinition) {
