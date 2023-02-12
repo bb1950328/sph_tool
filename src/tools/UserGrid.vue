@@ -15,7 +15,7 @@
       <tbody>
       <tr v-for="gridDef in allUserGrids" :key="gridDef.id">
         <th scope="row">{{ gridDef.name }}</th>
-        <td>{{ gridDef.numCols }}&times;{{ gridDef.numRows }}</td>
+        <td>{{ gridDef.xAxis.size() }}&times;{{ gridDef.yAxis.size() }}</td>
         <td>
           <div class="btn-group" role="group" aria-label="Aktionen {{gridDef.name}}">
             <button type="button" class="btn btn-outline-secondary btn-sm edit-grid-button"

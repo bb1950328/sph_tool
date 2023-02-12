@@ -103,7 +103,7 @@ import {defaults as control_defaults} from "ol/control";
 import LayerGroup from "ol/layer/Group";
 import {Tile, Vector as layer_Vector} from "ol/layer";
 import {Feature, Overlay} from "ol";
-import {Point} from "ol/geom";
+import {MultiLineString, Point} from "ol/geom";
 import {Circle, Fill, Stroke, Style, Text as style_Text} from "ol/style";
 import {watch} from "vue";
 import {allPoints} from "@/points_list";
@@ -117,6 +117,7 @@ import {
 } from "@/util";
 import {FontAwesomeIcon, FontAwesomeLayers} from "@fortawesome/vue-fontawesome";
 import MapPopupPointInfo from "@/components/MapPopupPointInfo.vue";
+import {allUserGrids} from "@/user_grid";
 
 const PIXEL_URL = "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg";
 const SATELLITE_URL = "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg"
@@ -166,6 +167,15 @@ const currentLocationLayerStyleFunc = (feature) => [
   }),
 ];
 
+const userGridLayerStyleFunc = (feature) => [
+    new Style({
+      stroke: new Stroke({
+        width: 2,
+        color: "#ff0000",
+      }),
+    }),
+]
+
 export default {
   name: "MapView",
   components: {FontAwesomeLayers, MapPopupPointInfo, FontAwesomeIcon},
@@ -179,6 +189,7 @@ export default {
       overlay: null,
       currentOverlayPointId: null,
       temporaryPointCoordinates: null,
+      temporaryPointUserGridIdentifiers: {},
       map: null,
       currentMapZoom: 12,
       showingCurrentLocation: false,
@@ -271,10 +282,57 @@ export default {
       source: this.currentLocationSource,
       style: currentLocationLayerStyleFunc,
     });
+
+    const userGridSource = new Vector({
+      features: [],
+    });
+    for (const grid of allUserGrids) {
+      const coords = [];
+      const startIdx = {
+        xColumn: -.5,
+        yRow: -.5,
+        quadrant: -1,
+      };
+      const endIdx = {
+        xColumn: -.5,
+        yRow: grid.yAxis.size() - .5,
+        quadrant: -1,
+      };
+      for (let i = 0; i < grid.xAxis.size() + 1; i++) {
+        startIdx.xColumn = i - .5;
+        endIdx.xColumn = i - .5;
+        coords.push([
+          this.LV03toEPSG3857(grid.indexToCoords(startIdx)),
+          this.LV03toEPSG3857(grid.indexToCoords(endIdx)),
+        ]);
+      }
+      startIdx.xColumn = -.5;
+      endIdx.xColumn = grid.xAxis.size() - .5;
+      for (let i = 0; i < grid.yAxis.size() + 1; i++) {
+        startIdx.yRow = i - .5;
+        endIdx.yRow = i - .5;
+        coords.push([
+          this.LV03toEPSG3857(grid.indexToCoords(startIdx)),
+          this.LV03toEPSG3857(grid.indexToCoords(endIdx)),
+        ]);
+      }
+
+      userGridSource.addFeature(new Feature({
+        geometry: new MultiLineString(coords),
+        name: grid.name,
+      }));
+    }
+
+    const userGridLayer = new layer_Vector({
+      source: userGridSource,
+      style: userGridLayerStyleFunc
+    });
+
     this.map = new Map({
       target: this.$refs.map_root,
       layers: [
         this.mapLayers[this.activeMapLayer],
+        userGridLayer,
         featuresLayer,
         currentLocationLayer,
       ],

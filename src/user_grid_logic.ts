@@ -75,14 +75,23 @@ export class UserGrid implements UserGridDefinition {
         return blocks;
     }
 
-    identifierToIndex(def: UserGridDefinition, identifier: string): UserGridCellIndex {
+    identifierToIndex(identifier: string): UserGridCellIndex {
         const identifierBlocks = this.splitIdentifier(identifier);
         return {
             xColumn: this.xAxis.convertIdentifierToIndex(identifierBlocks[0]),
             yRow: this.yAxis.convertIdentifierToIndex(identifierBlocks[1]),
-            quadrant: def.cellQuadrantLetters !== null
-                ? def.cellQuadrantLetters.indexOf(identifierBlocks[2])
+            quadrant: this.cellQuadrantLetters !== null
+                ? this.cellQuadrantLetters.indexOf(identifierBlocks[2])
                 : -1,
+        }
+    }
+
+    indexToIdentifier(index: UserGridCellIndex): string {
+        const base = this.xAxis.convertIndexToIdentifier(index.xColumn) + this.yAxis.convertIndexToIdentifier(index.yRow);
+        if (this.cellQuadrantLetters != null && 0 <= index.quadrant && index.quadrant <= 3) {
+            return base + this.cellQuadrantLetters[index.quadrant];
+        } else {
+            return base;
         }
     }
 
@@ -90,8 +99,8 @@ export class UserGrid implements UserGridDefinition {
      * side length of one cell in meters
      */
     getCellSize(): number {
-        const idx0 = this.identifierToIndex(this, this.refPoint0Identifier);
-        const idx1 = this.identifierToIndex(this, this.refPoint1Identifier);
+        const idx0 = this.identifierToIndex(this.refPoint0Identifier);
+        const idx1 = this.identifierToIndex(this.refPoint1Identifier);
 
         const cellDiffX = idx1.xColumn - idx0.xColumn;
         const cellDiffY = idx1.yRow - idx0.yRow;
@@ -106,8 +115,8 @@ export class UserGrid implements UserGridDefinition {
     validateValues(): string[] {
         const result = [];
 
-        const idx0 = this.identifierToIndex(this, this.refPoint0Identifier);
-        const idx1 = this.identifierToIndex(this, this.refPoint1Identifier);
+        const idx0 = this.identifierToIndex(this.refPoint0Identifier);
+        const idx1 = this.identifierToIndex(this.refPoint1Identifier);
         const cellDiffX = idx1.xColumn - idx0.xColumn;
         const cellDiffY = idx1.yRow - idx0.yRow;
         const coordDiffX = this.refPoint1Coords.x - this.refPoint0Coords.x;
@@ -123,7 +132,7 @@ export class UserGrid implements UserGridDefinition {
     }
 
     indexToCoords(index: UserGridCellIndex): LV03coordinates {
-        const idx0 = this.identifierToIndex(this, this.refPoint0Identifier);
+        const idx0 = this.identifierToIndex(this.refPoint0Identifier);
         const scaling = this.getCellSize();
 
         let fractionIdxX = index.xColumn;
@@ -138,6 +147,39 @@ export class UserGrid implements UserGridDefinition {
             z: 0,
         }
     }
+
+    /**
+     * @param coords
+     * @param outOfBoundsCheck
+     * @return the index of the cell (always has a quadrant) or null if the coords are out of bounds for this grid and `outOfBoundsCheck===true`
+     */
+    coordsToIndex(coords: LV03coordinates, outOfBoundsCheck: boolean = true): UserGridCellIndex | null {
+        const idx0 = this.identifierToIndex(this.refPoint0Identifier);
+        const scaling = this.getCellSize();
+
+        const fractionIdxX = idx0.xColumn + (coords.x - this.refPoint0Coords.x) / scaling;
+        const fractionIdxY = idx0.yRow + (coords.y - this.refPoint0Coords.y) / scaling;
+        if (outOfBoundsCheck &&
+            (fractionIdxX < -.5 || fractionIdxX > this.xAxis.size() - .5
+                || fractionIdxY < -.5 || fractionIdxY > this.yAxis.size() - .5)) {
+            return null;
+        }
+
+        let quadrant: number;
+        const firstQuadrantCol = fractionIdxX < Math.round(fractionIdxX);
+        const firstQuadrantRow = fractionIdxY < Math.round(fractionIdxY);
+        if (firstQuadrantCol) {
+            quadrant = firstQuadrantRow ? 0 : 3;
+        } else {
+            quadrant = firstQuadrantRow ? 1 : 2;
+        }
+
+        return {
+            xColumn: Math.round(fractionIdxX),
+            yRow: Math.round(fractionIdxY),
+            quadrant: quadrant,
+        }
+    }
 }
 
 export interface UserGridAxisDefinition {
@@ -145,10 +187,12 @@ export interface UserGridAxisDefinition {
     firstIdentifier: string;
     lastIdentifier: string;
 }
-export interface UserGridAxis extends UserGridAxisDefinition {}
+
+export interface UserGridAxis extends UserGridAxisDefinition {
+}
 
 export class UserGridAxis {
-    constructor(def: {numberingScheme: NumberingScheme, firstIdentifier?: string, lastIdentifier?: string}) {
+    constructor(def: { numberingScheme: NumberingScheme, firstIdentifier?: string, lastIdentifier?: string }) {
         if (def.numberingScheme == NumberingScheme.NUMBERS) {
             this.firstIdentifier = "1";
             this.lastIdentifier = "10";
