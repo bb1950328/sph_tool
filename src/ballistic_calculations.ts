@@ -9,6 +9,10 @@ import {
 
 export class BallisticSituation {
     /**
+     * `"sako"` or `"stgw"`
+     */
+    weapon: string;
+    /**
      * Distance to target in meters
      */
     distance: number;
@@ -34,6 +38,7 @@ export class BallisticSituation {
     oldBarrel: boolean;
 
     constructor() {
+        this.weapon = "sako";
         this.distance = 100;
         this.windSpeed = 0;
         this.windClock = 0;
@@ -43,6 +48,7 @@ export class BallisticSituation {
     }
 
     loadFromLocalStorage(prefix: string = "ballistics") {
+        this.weapon = localStorage.getItem(`${prefix}_weapon`) || "sako";
         this.distance = parseInt(localStorage.getItem(`${prefix}_distance`) || "") || 100;
         this.windSpeed = parseInt(localStorage.getItem(`${prefix}_windSpeed`) || "") || 0;
         this.windClock = parseInt(localStorage.getItem(`${prefix}_windClock`) || "") || 0;
@@ -52,6 +58,7 @@ export class BallisticSituation {
     }
 
     saveToLocalStorage(prefix: string = "ballistics") {
+        localStorage.setItem(`${prefix}_weapon`, this.weapon.toString());
         localStorage.setItem(`${prefix}_distance`, this.distance.toString());
         localStorage.setItem(`${prefix}_windSpeed`, this.windSpeed.toString());
         localStorage.setItem(`${prefix}_windClock`, this.windClock.toString());

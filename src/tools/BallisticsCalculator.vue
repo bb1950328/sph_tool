@@ -1,6 +1,13 @@
 <template>
   <div class="p-2 d-flex flex-column">
     <form class="col-11">
+      <div class="mb-3">
+        <label for="weapon" class="form-label">Waffe</label>
+        <select class="form-select" v-model="situation.weapon">
+          <option value="sako">Sako TRG 42 (SSGw 04)</option>
+          <option value="stwg">SIG 550 (Stgw 90)</option>
+        </select>
+      </div>
       <div class="mb-3 row">
         <div class="col">
           <label for="distance-range-input" class="form-label">Distanz</label>
