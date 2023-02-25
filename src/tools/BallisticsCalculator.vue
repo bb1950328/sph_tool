@@ -4,29 +4,33 @@
       <div class="mb-3">
         <label for="weapon" class="form-label">Waffe</label>
         <select class="form-select" v-model="situation.weapon">
-          <option value="sako">Sako TRG 42 (SSGw 04)</option>
-          <option value="stwg">SIG 550 (Stgw 90)</option>
+          <option :value="key" :key="key" v-for="(description, key) in BALLISTICS_DATA_WEAPONS">{{
+              description
+            }}
+          </option>
         </select>
       </div>
       <div class="mb-3 row">
         <div class="col">
-          <label for="distance-range-input" class="form-label">Distanz</label>
+          <label for="distance-range-input" class="form-label">Distanz (m)</label>
           <input id="distance-range-input" type="range" class="form-range"
-                 v-model="situation.distance" min="100" max="1200">
+                 v-model="situation.distance" :min="situation.ballisticsData.minDistance"
+                 :max="situation.ballisticsData.maxDistance">
         </div>
         <div class="col-sm-2 col-md-2 col-lg-1 double-input-value-container">
-          <label for="distance-value-input" class="form-label" hidden>Distanz</label>
-          <input id="distance-value-input" type="number" class="form-control" v-model="situation.distance" aria-label="Distance">
+          <label for="distance-value-input" class="form-label" hidden>Distanz (m)</label>
+          <input id="distance-value-input" type="number" class="form-control" v-model="situation.distance"
+                 aria-label="Distance">
         </div>
       </div>
       <div class="mb-3 row">
         <div class="col">
-          <label for="wind-speed-range-input" class="form-label">Windgeschwindigkeit</label>
+          <label for="wind-speed-range-input" class="form-label">Windgeschwindigkeit (m/s)</label>
           <input id="wind-speed-range-input" type="range" class="form-range"
                  v-model="situation.windSpeed" min="0" max="10">
         </div>
         <div class="col-sm-2 col-md-2 col-lg-1 double-input-value-container">
-          <label for="wind-speed-value-input" class="form-label" hidden>Windgeschwindigkeit</label>
+          <label for="wind-speed-value-input" class="form-label" hidden>Windgeschwindigkeit (m/s)</label>
           <input id="wind-speed-value-input" class="form-control" type="number"
                  v-model="situation.windSpeed" min="0" max="10" aria-label="Wind speed">
         </div>
@@ -38,11 +42,11 @@
         </div>
         <div class="col">
           <div class="mb-3">
-            <label for="airPressureInput" class="form-label">Luftdruck</label>
+            <label for="airPressureInput" class="form-label">Luftdruck (mbar)</label>
             <input id="airPressureInput" type="number" class="form-control" v-model="situation.airPressure">
           </div>
           <div class="mb-3">
-            <label for="temperatureInput" class="form-label">Temperatur</label>
+            <label for="temperatureInput" class="form-label">Temperatur (°C)</label>
             <input id="temperatureInput" type="number" class="form-control" v-model="situation.temperature">
           </div>
           <div class="mb-3">
@@ -61,7 +65,7 @@
       </div>
     </form>
     <h2>Resultat</h2>
-    <div class="mb-5" id="clicks-result">
+    <div class="mb-3" id="clicks-result">
       <div class="">
         <table>
           <tr>
@@ -109,6 +113,14 @@
         </table>
       </div>
     </div>
+    <div class="mb-4">
+      <div>
+        Flugzeit: {{ situation.flightTime }} s
+      </div>
+      <div>
+        Geschossenergie: {{ situation.bulletEnergy }} J
+      </div>
+    </div>
 
     <button type="button" class="btn btn-outline-secondary w-auto" @click="$refs.clickTable.openModal(this.situation)">
       <font-awesome-icon icon="fa-solid fa-table-cells"/>
@@ -130,9 +142,18 @@ import {
 import ClockRadioGroup from "@/components/ClockRadioGroup.vue";
 import ClickTable from "@/components/ClickTable.vue";
 import {reactive} from "vue";
+import {BALLISTICS_DATA, BALLISTICS_DATA_WEAPONS} from "@/ballistics_data";
 
 export default {
   name: "BallisticsCalculator",
+  computed: {
+    BALLISTICS_DATA() {
+      return BALLISTICS_DATA
+    },
+    BALLISTICS_DATA_WEAPONS() {
+      return BALLISTICS_DATA_WEAPONS
+    }
+  },
   components: {
     ClockRadioGroup,
     ClickTable,

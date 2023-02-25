@@ -1,10 +1,5 @@
 import {
-    GP04_ELEVATION_AIR_PRESSURE_CORRECTION,
-    GP04_ELEVATION_CLICKS,
-    GP04_ELEVATION_OLD_BARREL_CORRECTION,
-    GP04_ELEVATION_TEMPERATURE_CORRECTION,
-    GP04_WINDAGE_DERIVATION,
-    GP04_WINDAGE_WIND
+    BALLISTICS_DATA, BallisticsData,
 } from "@/ballistics_data";
 
 export class BallisticSituation {
@@ -67,22 +62,26 @@ export class BallisticSituation {
         localStorage.setItem(`${prefix}_oldBarrel`, this.oldBarrel.toString());
     }
 
+    get ballisticsData(): BallisticsData {
+        return BALLISTICS_DATA[this.weapon];
+    }
+
     get baseElevation(): number {
-        return GP04_ELEVATION_CLICKS.getValueLinearInterpolation(this.distance);
+        return this.ballisticsData.distanceElevation.getValueLinearInterpolation(this.distance);
     }
 
     get oldBarrelElevationCorrection(): number {
         return this.oldBarrel
-            ? GP04_ELEVATION_OLD_BARREL_CORRECTION.getValueLinearInterpolation(this.distance)
+            ? this.ballisticsData.oldBarrelDistanceElevation.getValueLinearInterpolation(this.distance)
             : 0;
     }
 
     get airPressureElevationCorrection(): number {
-        return GP04_ELEVATION_AIR_PRESSURE_CORRECTION.getValueBilinearInterpolation(this.distance, this.airPressure);
+        return this.ballisticsData.distanceAirPressureElevation.getValueBilinearInterpolation(this.distance, this.airPressure);
     }
 
     get temperatureElevationCorrection(): number {
-        return GP04_ELEVATION_TEMPERATURE_CORRECTION.getValueBilinearInterpolation(this.distance, this.temperature);
+        return this.ballisticsData.distanceTemperatureElevation.getValueBilinearInterpolation(this.distance, this.temperature);
     }
 
     get totalElevation(): number {
@@ -105,16 +104,23 @@ export class BallisticSituation {
     }
 
     get baseWindage(): number {
-        return GP04_WINDAGE_WIND.getValueTrilinearInterpolation(this.distance, this.windClock0to3, this.windSpeed);
+        return this.ballisticsData.distanceWindClockSpeedWindage.getValueTrilinearInterpolation(this.distance, this.windClock0to3, this.windSpeed);
     }
 
     get derivationWindageCorrection(): number {
-        return GP04_WINDAGE_DERIVATION.getValueLinearInterpolation(this.distance);
+        return this.ballisticsData.distanceDerivationWindage.getValueLinearInterpolation(this.distance);
     }
 
     get totalWindage(): number {
         return this.baseWindage
             + this.derivationWindageCorrection;
+    }
+
+    get flightTime(): number {
+        return this.ballisticsData.distanceFlightTime.getValueLinearInterpolation(this.distance);
+    }
+    get bulletEnergy(): number {
+        return this.ballisticsData.distanceBulletEnergy.getValueLinearInterpolation(this.distance);
     }
 }
 
