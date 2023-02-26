@@ -232,3 +232,9 @@ export function deepClone<T>(obj: T): T {
 export function isDigits(text: string): boolean {
     return /^\d+$/.test(text);
 }
+
+export function solveQuadraticEquation(a: number, b: number, c: number): [number, number] {
+    const result = (-1 * b + Math.sqrt(Math.pow(b, 2) - (4 * a * c))) / (2 * a);
+    const result2 = (-1 * b - Math.sqrt(Math.pow(b, 2) - (4 * a * c))) / (2 * a);
+    return [result, result2];
+}
