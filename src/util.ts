@@ -1,3 +1,5 @@
+import math from "mathjs";
+
 export const LV03_X_MIN = 485_000;
 export const LV03_X_MAX = 835_000;
 export const LV03_Y_MIN = 74_000;
@@ -237,4 +239,11 @@ export function solveQuadraticEquation(a: number, b: number, c: number): [number
     const result = (-1 * b + Math.sqrt(Math.pow(b, 2) - (4 * a * c))) / (2 * a);
     const result2 = (-1 * b - Math.sqrt(Math.pow(b, 2) - (4 * a * c))) / (2 * a);
     return [result, result2];
+}
+
+export function angleBetweenVectors(a: math.Matrix, b: math.Matrix): number {
+    const dot: number = math.dot(a, b);
+    const absProduct: number = <number>math.norm(a) * <number>math.norm(b);
+
+    return <number>math.acos(dot / absProduct);
 }

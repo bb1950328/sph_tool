@@ -1,4 +1,4 @@
-import {formatArtilleryPromilleValue, LV03coordinates, solveQuadraticEquation} from "@/util";
+import {angleBetweenVectors, formatArtilleryPromilleValue, LV03coordinates, solveQuadraticEquation} from "@/util";
 import {glMatrix, vec2, vec3} from "gl-matrix"
 import * as math from "mathjs";
 
@@ -202,3 +202,35 @@ export function poseEstimation2(input: PoseEstimationInputParams): CameraPose {
         zDir: vec3.create(),
     };
 }
+
+export interface ReferencePoint2 {
+    imgCoords: math.Matrix;//between -1 and +1
+    worldCoords: LV03coordinates;
+}
+
+export interface PoseEstimationInputParams2 {
+    cameraPosition: LV03coordinates,
+    referencePoints: ReferencePoint2[],
+}
+
+export function poseEstimation3(input: PoseEstimationInputParams2): CameraPose {
+    const camCoords = coordToMatrix(input.cameraPosition);
+    const worldCamToPoint: math.Matrix[] = [];
+    for (const rp of input.referencePoints) {
+        const rpCoords = coordToMatrix(rp.worldCoords);
+        worldCamToPoint.push(math.subtract(rpCoords, camCoords));
+    }
+    const angleBetweenReferencePoints = angleBetweenVectors(worldCamToPoint[0], worldCamToPoint[1]);
+
+    //make two vectors for the two reference points in camera space (angle between them is the same as the angle between the world reference vectors)
+
+    //use triad method to find rotation
+
+    return {
+        position: {x: 0, y: 0, z: 0},
+        xDir: vec3.create(),
+        yDir: vec3.create(),
+        zDir: vec3.create(),
+    };
+}
+
