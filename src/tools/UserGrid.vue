@@ -64,16 +64,10 @@
 </template>
 
 <script>
-import {
-  allUserGrids,
-  createNewUserGridDefinition,
-  deleteUserGridDefinition,
-  getUserGridDefinition,
-  saveUserGridDefinition
-} from "@/user_grid";
+import {allUserGrids, deleteUserGridDefinition, getUserGridDefinition, saveUserGridDefinition} from "@/user_grid";
 import {Modal} from "bootstrap"
-import {deepClone} from "@/util";
 import UserGridForm from "@/components/UserGridForm.vue";
+import {UserGrid} from "@/user_grid_logic";
 
 export default {
   name: "UserGrid",
@@ -90,11 +84,11 @@ export default {
       this.modal.hide();
     },
     newGrid() {
-      this.currentlyEditingGrid = createNewUserGridDefinition();
+      this.currentlyEditingGrid = new UserGrid();
       this.modal.show();
     },
     startEditGrid(id) {
-      this.currentlyEditingGrid = deepClone(getUserGridDefinition(id));
+      this.currentlyEditingGrid = new UserGrid(getUserGridDefinition(id));
       this.modal.show();
     },
     editingGridChanged(newGrid) {

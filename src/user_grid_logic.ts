@@ -38,7 +38,6 @@ export class UserGrid implements UserGridDefinition {
         this.refPoint1Coords = {x: 0, y: 0, z: 0};
         this.refPoint0Identifier = "";
         this.refPoint1Identifier = "";
-        console.log(this.xAxis, this.yAxis);
         if (def) {
             Object.assign(this, def);
             this.xAxis = new UserGridAxis(def.xAxis);
@@ -143,7 +142,7 @@ export class UserGrid implements UserGridDefinition {
         }
         return {
             x: this.refPoint0Coords.x + scaling * (fractionIdxX - idx0.xColumn),
-            y: this.refPoint0Coords.y + scaling * (fractionIdxY - idx0.yRow),
+            y: this.refPoint0Coords.y - scaling * (fractionIdxY - idx0.yRow),
             z: 0,
         }
     }
@@ -158,7 +157,7 @@ export class UserGrid implements UserGridDefinition {
         const scaling = this.getCellSize();
 
         const fractionIdxX = idx0.xColumn + (coords.x - this.refPoint0Coords.x) / scaling;
-        const fractionIdxY = idx0.yRow + (coords.y - this.refPoint0Coords.y) / scaling;
+        const fractionIdxY = idx0.yRow - (coords.y - this.refPoint0Coords.y) / scaling;
         if (outOfBoundsCheck &&
             (fractionIdxX < -.5 || fractionIdxX > this.xAxis.size() - .5
                 || fractionIdxY < -.5 || fractionIdxY > this.yAxis.size() - .5)) {
@@ -256,7 +255,14 @@ export class UserGridAxis {
 export interface UserGridCellIndex {
     xColumn: number,
     yRow: number,
-    /**0, 1, 2, 3 or -1 if there are no quadrants defined*/
+    /**
+     * +---+---+
+     * | 0 | 1 |
+     * | --+-- |
+     * | 3 | 2 |
+     * +---+---+
+     *
+     * -1 if there are no quadrants defined*/
     quadrant: number,
 }
 

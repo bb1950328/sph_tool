@@ -168,12 +168,24 @@ const currentLocationLayerStyleFunc = (feature) => [
 ];
 
 const userGridLayerStyleFunc = (feature) => [
-    new Style({
-      stroke: new Stroke({
-        width: 2,
-        color: "#ff0000",
-      }),
+  new Style({
+    stroke: new Stroke({
+      width: 2,
+      color: "#ff0000",
     }),
+    text: new style_Text({
+      font: '1.5rem Avenir,sans-serif',
+      fill: new Fill({
+        color: '#ff0000'
+      }),
+      stroke: new Stroke({
+        color: '#fff',
+        width: 4
+      }),
+      offsetY: 0,
+      text: feature.get("txt"),
+    }),
+  }),
 ]
 
 export default {
@@ -193,7 +205,9 @@ export default {
       map: null,
       currentMapZoom: 12,
       showingCurrentLocation: false,
+      pointsSource: null,
       currentLocationSource: null,
+      userGridSource: null,
       geolocationWatchId: null,
       mapLayerNames: [
         {"id": "osm", "displayName": "OpenStreetMap"},
@@ -243,30 +257,17 @@ export default {
       ],
     });
 
-    let vectorSource = new Vector({
+    this.pointsSource = new Vector({
       features: [],
     });
-    const updatePoints = () => {
-      vectorSource.clear();
-      Object.keys(allPoints).forEach(id => {
-        const pt = allPoints[id];
-        const wgs84pt = LV03toWGS84(pt.coordinates);
-        vectorSource.addFeature(new Feature({
-          name: pt.description,
-          geometry: new Point(proj_transform([wgs84pt.longitude, wgs84pt.latitude], "EPSG:4326", "EPSG:3857")),
-          type: FEATURE_TYPE_POINT,
-          pointId: id,
-        }));
-      });
-    };
-    updatePoints();
-    watch(allPoints, updatePoints);
+    this.updatePoints();
+    watch(allPoints, this.updatePoints);
 
-    let featuresLayer = new layer_Vector({
-      source: vectorSource,
+    let pointsLayer = new layer_Vector({
+      source: this.pointsSource,
       style: featureStyleFunc,
     });
-    featuresLayer.setZIndex(100);
+    pointsLayer.setZIndex(100);
     this.overlay = new Overlay({
       element: this.$refs.popupContainer,
       autoPan: {
@@ -283,48 +284,15 @@ export default {
       style: currentLocationLayerStyleFunc,
     });
 
-    const userGridSource = new Vector({
+    this.userGridSource = new Vector({
       features: [],
     });
-    for (const grid of allUserGrids) {
-      const coords = [];
-      const startIdx = {
-        xColumn: -.5,
-        yRow: -.5,
-        quadrant: -1,
-      };
-      const endIdx = {
-        xColumn: -.5,
-        yRow: grid.yAxis.size() - .5,
-        quadrant: -1,
-      };
-      for (let i = 0; i < grid.xAxis.size() + 1; i++) {
-        startIdx.xColumn = i - .5;
-        endIdx.xColumn = i - .5;
-        coords.push([
-          this.LV03toEPSG3857(grid.indexToCoords(startIdx)),
-          this.LV03toEPSG3857(grid.indexToCoords(endIdx)),
-        ]);
-      }
-      startIdx.xColumn = -.5;
-      endIdx.xColumn = grid.xAxis.size() - .5;
-      for (let i = 0; i < grid.yAxis.size() + 1; i++) {
-        startIdx.yRow = i - .5;
-        endIdx.yRow = i - .5;
-        coords.push([
-          this.LV03toEPSG3857(grid.indexToCoords(startIdx)),
-          this.LV03toEPSG3857(grid.indexToCoords(endIdx)),
-        ]);
-      }
 
-      userGridSource.addFeature(new Feature({
-        geometry: new MultiLineString(coords),
-        name: grid.name,
-      }));
-    }
+    this.updateUserGrids();
+    watch(allUserGrids, this.updateUserGrids);
 
     const userGridLayer = new layer_Vector({
-      source: userGridSource,
+      source: this.userGridSource,
       style: userGridLayerStyleFunc
     });
 
@@ -333,7 +301,7 @@ export default {
       layers: [
         this.mapLayers[this.activeMapLayer],
         userGridLayer,
-        featuresLayer,
+        pointsLayer,
         currentLocationLayer,
       ],
       view: new View({
@@ -437,7 +405,77 @@ export default {
     },
     deletePoint(pointId) {
       delete allPoints[pointId];
-    }
+    },
+    updatePoints() {
+      this.pointsSource.clear();
+      Object.keys(allPoints).forEach(id => {
+        const pt = allPoints[id];
+        const wgs84pt = LV03toWGS84(pt.coordinates);
+        this.pointsSource.addFeature(new Feature({
+          name: pt.description,
+          geometry: new Point(proj_transform([wgs84pt.longitude, wgs84pt.latitude], "EPSG:4326", "EPSG:3857")),
+          type: FEATURE_TYPE_POINT,
+          pointId: id,
+        }));
+      });
+    },
+    updateUserGrids() {
+      this.userGridSource.clear();
+      for (const grid of allUserGrids) {
+        const coords = [];
+        const startIdx = {
+          xColumn: -.5,
+          yRow: -.5,
+          quadrant: -1,
+        };
+        const endIdx = {
+          xColumn: -.5,
+          yRow: grid.yAxis.size() - .5,
+          quadrant: -1,
+        };
+        for (let i = 0; i < grid.xAxis.size() + 1; i++) {
+          startIdx.xColumn = i - .5;
+          endIdx.xColumn = i - .5;
+          coords.push([
+            this.LV03toEPSG3857(grid.indexToCoords(startIdx)),
+            this.LV03toEPSG3857(grid.indexToCoords(endIdx)),
+          ]);
+          if (i < grid.xAxis.size()) {
+            for (let idx of [startIdx, endIdx]) {
+              idx.xColumn = i;
+              this.userGridSource.addFeature(new Feature({
+                geometry: new Point(this.LV03toEPSG3857(grid.indexToCoords(idx))),
+                txt: grid.xAxis.convertIndexToIdentifier(i),
+              }));
+            }
+          }
+        }
+        startIdx.xColumn = -.5;
+        endIdx.xColumn = grid.xAxis.size() - .5;
+        for (let i = 0; i < grid.yAxis.size() + 1; i++) {
+          startIdx.yRow = i - .5;
+          endIdx.yRow = i - .5;
+          coords.push([
+            this.LV03toEPSG3857(grid.indexToCoords(startIdx)),
+            this.LV03toEPSG3857(grid.indexToCoords(endIdx)),
+          ]);
+          if (i < grid.yAxis.size()) {
+            for (let idx of [startIdx, endIdx]) {
+              idx.yRow = i;
+              this.userGridSource.addFeature(new Feature({
+                geometry: new Point(this.LV03toEPSG3857(grid.indexToCoords(idx))),
+                txt: grid.yAxis.convertIndexToIdentifier(i),
+              }));
+            }
+          }
+        }
+
+        this.userGridSource.addFeature(new Feature({
+          geometry: new MultiLineString(coords),
+          name: grid.name,
+        }));
+      }
+    },
   },
   watch: {
     temporaryPointCoordinates: function (newValue) {

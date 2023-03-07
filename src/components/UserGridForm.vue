@@ -61,7 +61,7 @@
       </div>
       <div v-if="hasQuadrantLetters">
         <div :class="{'col-6': true, 'd-inline-block': true, 'pe-2':i%2===1, 'pb-2':i%2===0}" v-for="i in 4" :key="i">
-          <input v-model="mutableValue.cellQuadrantLetters[i-1]" class="form-control" required/>
+          <input v-model="mutableValue.cellQuadrantLetters[i<3?i-1:(i===3?3:2)]" class="form-control" required/>
         </div>
       </div>
     </div>
@@ -114,7 +114,6 @@
 <script lang="ts">
 import {NumberingScheme, UserGrid} from "@/user_grid_logic";
 import {PropType, reactive} from "vue";
-import {deepClone} from "@/util";
 import PointInput from "@/components/PointInput.vue";
 
 export default {
@@ -151,7 +150,7 @@ export default {
     },
     hasQuadrantLetters() {
       this.mutableValue.cellQuadrantLetters = this.$refs.inpQuadrantLettersActive.value
-          ? ["A", "B", "D", "C"]
+          ? ["A", "B", "C", "D"]
           : null;
     }
   },

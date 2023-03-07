@@ -9,7 +9,7 @@
       <th scope="row">WGS84:</th>
       <td>{{ formatCoordinatesWGS84Decimal(LV03toWGS84(coordinates)) }}</td>
     </tr>
-    <tr v-for="arr in userGridIdentifiers" :key="arr[0]">
+    <tr v-for="arr in getUserGridIdentifiers()" :key="arr[0]">
       <th scope="row">{{ arr[1] }}</th>
       <td>{{ arr[2] }}</td>
     </tr>
@@ -27,15 +27,7 @@ export default {
     LV03toWGS84,
     formatCoordinatesWGS84Decimal,
     formatCoordinatesLV03,
-  },
-  props: {
-    title: String,
-    coordinates: {
-      type: Object as () => LV03coordinates,
-    },
-  },
-  computed: {
-    userGridIdentifiers() {
+    getUserGridIdentifiers() {
       const result: [number, string, string][] = [];
       allUserGrids.forEach(grid => {
         const idx = grid.coordsToIndex(this.coordinates);
@@ -45,7 +37,13 @@ export default {
       });
       return result;
     }
-  }
+  },
+  props: {
+    title: String,
+    coordinates: {
+      type: Object as () => LV03coordinates,
+    },
+  },
 }
 </script>
 
