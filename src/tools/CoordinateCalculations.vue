@@ -80,12 +80,20 @@
           </table>
         </div>
         <div v-if="currentUnknownValue!=='direction'">
+          <p>
+            Distanz topografisch: {{ Math.round(this.resultDistanceTopo) }}m
+          </p>
           <p v-if="currentUnknownValue==='observer-coordinates'">
             Beobachterkoordinaten: {{ formatCoordinates(resultObserverCoordinates) }}
           </p>
           <p v-if="currentUnknownValue==='target-coordinates'">
             Zielkoordinaten: {{ formatCoordinates(resultTargetCoordinates) }}
           </p>
+          <button class="btn btn-primary"
+                  @click="$router.push({path: 'pointList', query: {intent: JSON.stringify({action: 'create', coordinates: currentUnknownValue==='observer-coordinates'?resultObserverCoordinates:resultTargetCoordinates})}})">
+            <font-awesome-icon icon="fa-solid fa-floppy-disk"/>
+            Als neuen Punkt speichern
+          </button>
         </div>
       </div>
     </form>
@@ -140,10 +148,10 @@ export default {
       } else {
         let gelwiRadians = (Math.round(this.inpGelwi) % 6400) / 3200 * Math.PI;
         let diffZ = Math.sin(gelwiRadians) * this.inpDistanceVisual;
-        let distanceTopo = Math.sqrt(this.inpDistanceVisual * this.inpDistanceVisual - diffZ * diffZ);
-        let azimutRadians = (Math.round(this.inpAzimut) % 6400) / 3200 * Math.PI;
-        let diffX = Math.cos(azimutRadians) * distanceTopo;
-        let diffY = Math.sin(azimutRadians) * distanceTopo;
+        this.resultDistanceTopo = Math.sqrt(this.inpDistanceVisual * this.inpDistanceVisual - diffZ * diffZ);
+        let azimutRadians = (Math.round(1600 - this.inpAzimut) % 6400) / 3200 * Math.PI;
+        let diffX = Math.cos(azimutRadians) * this.resultDistanceTopo;
+        let diffY = Math.sin(azimutRadians) * this.resultDistanceTopo;
 
         let targetIsUnknown = this.currentUnknownValue === "target-coordinates";
         let knownPoint = targetIsUnknown ? this.inpObserverPoint : this.inpTargetPoint;
