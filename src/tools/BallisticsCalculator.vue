@@ -115,10 +115,10 @@
     </div>
     <div class="mb-4">
       <div>
-        Flugzeit: {{ situation.flightTime }} s
+        Flugzeit: {{ situation.flightTime.toFixed(1) }} s
       </div>
       <div>
-        Geschossenergie: {{ situation.bulletEnergy }} J
+        Geschossenergie: {{ Math.round(situation.bulletEnergy) }} J
       </div>
     </div>
 

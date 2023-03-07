@@ -43,7 +43,7 @@
 
             </div>
           </form>
-          <table>
+          <table class="table table-striped">
             <thead>
             <tr>
               <th>Distanz</th>

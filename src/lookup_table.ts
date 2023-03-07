@@ -12,19 +12,36 @@ export class LookUpTableBase {
     }
 
     protected findIndicesAndFactorForInterpolation(keys: number[], key: number): [number, number, number] {
-        if (key <= keys[0]) {
-            return [0, 0, 1];
-        } else if (key >= keys[keys.length - 1]) {
-            return [keys.length - 1, keys.length - 1, 1];
-        } else {
-            let i = 0;
-            while (keys[i] < key && i < keys.length - 1) {
+        const ascending = keys[0] < keys[1];
+        const lastKeyIndex = keys.length - 1;
+        let i: number;
+        let i2: number;
+        if (ascending) {
+            if (key <= keys[0]) {
+                return [0, 0, 1];
+            } else if (key >= keys[lastKeyIndex]) {
+                return [lastKeyIndex, lastKeyIndex, 1];
+            }
+            i = 0;
+            while (keys[i] < key && i < lastKeyIndex) {
                 ++i;
             }
-            const lower = keys[i - 1];
-            const upper = keys[i];
-            return [i - 1, i, (upper - key) / (upper - lower)];
+            i2 = i - 1;
+        } else {
+            if (key <= keys[lastKeyIndex]) {
+                return [lastKeyIndex, lastKeyIndex, 1];
+            } else if (key >= keys[0]) {
+                return [0, 0, 1];
+            }
+            i = lastKeyIndex;
+            while (keys[i] < key && i > 0) {
+                --i;
+            }
+            i2 = i + 1;
         }
+        const lower = keys[i2];
+        const upper = keys[i];
+        return [i2, i, (upper - key) / (upper - lower)];
     }
 
     protected checkNotRagged2D(array: any[][]): void {
