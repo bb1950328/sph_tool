@@ -1,4 +1,4 @@
-import {LV03toWGS84, parseLV03, WGS84toLV03} from "@/util";
+import {findMonotonicFunctionArgument, LV03toWGS84, parseLV03, unitVec, WGS84toLV03} from "@/util";
 
 import {expect, test} from "vitest";
 import * as math from "mathjs";
@@ -23,6 +23,7 @@ test("LV03toWGS84", () => {
 
 test("parseLV03", () => {
     const result0 = parseLV03("123 456 / 987 654");
+    console.log(JSON.stringify(result0));
     expect(result0.x).toEqual(123456);
     expect(result0.y).toEqual(987654);
     expect(result0.z).toEqual(0);
@@ -30,6 +31,8 @@ test("parseLV03", () => {
     expect(result1.x).toEqual(123456);
     expect(result1.y).toEqual(987654);
     expect(result1.z).toEqual(1234);
+    const result2 = parseLV03("123456, 987654, 1234");
+    expect(result1).toEqual(result2);
 })
 
 test("matrixMultiplication", () => {
@@ -51,4 +54,26 @@ test("matrixMultiplication", () => {
         [29, -20, 74],
     ];
     expect(math.multiply(M, MT)).toStrictEqual(expected);
+});
+
+test("findMonotonicFunctionArgument", () => {
+   expect(findMonotonicFunctionArgument(x => x*4-2, 0, 10, 4.5)).toBeCloseTo(1.625, 4);
+   expect(findMonotonicFunctionArgument(x => math.sin(x), math.pi/-2, math.pi/2, 0.5)).toBeCloseTo(math.pi/6, 4);
+});
+
+test("absVec", () => {
+    const vec = math.matrix([
+        1,
+        2,
+        3,
+    ]);
+    const expected = math.matrix([
+        0.2672612419124243,
+        0.5345224838248487,
+        0.8017837257372731,
+    ]);
+    const actual = unitVec(vec);
+    for (let i = 0; i < 3; i++) {
+        expect(actual.get([i])).toBeCloseTo(expected.get([i]));
+    }
 });

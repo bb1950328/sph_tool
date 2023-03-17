@@ -1,4 +1,4 @@
-import math from "mathjs";
+import * as math from "mathjs";
 
 export const LV03_X_MIN = 485_000;
 export const LV03_X_MAX = 835_000;
@@ -140,10 +140,10 @@ export function getHeightFromSwissTopo(x: number, y: number, successCallback: (h
 
 export function parseLV03(text: string): LV03coordinates {
     text = text.replaceAll(" ", "");
-    const elements = text.split("/");
+    const elements = text.replaceAll(",", "/").split("/");
     return {
         x: parseInt(elements[0]),
-        y: elements.length > 2 ? parseInt(elements[1]) : 0,
+        y: elements.length > 1 ? parseInt(elements[1]) : 0,
         z: elements.length > 2 ? parseInt(elements[2]) : 0,
     };
 }
@@ -241,9 +241,52 @@ export function solveQuadraticEquation(a: number, b: number, c: number): [number
     return [result, result2];
 }
 
+export function findMonotonicFunctionArgument(f: (x: number) => number, xMin: number, xMax: number, yTarget: number, steps: number = 20) {
+    const yMin = f(xMin);
+    const yMax = f(xMax);
+    const increasing = yMin < yMax;
+    if (yTarget < (increasing ? yMin : yMin)) {
+        return xMin;
+    } else if ((increasing ? yMax : yMin) < yTarget) {
+        return xMax;
+    }
+    console.assert(yMin <= yTarget && yTarget <= yMax);
+    for (let i = 0; i < steps; i++) {
+        const xCenter = (xMin + xMax) / 2;
+        const yCenter = f(xCenter);
+        if (yCenter > yTarget) {
+            xMax = xCenter;
+        } else {
+            xMin = xCenter;
+        }
+    }
+    return (xMin + xMax) / 2;
+}
+
 export function angleBetweenVectors(a: math.Matrix, b: math.Matrix): number {
     const dot: number = math.dot(a, b);
     const absProduct: number = <number>math.norm(a) * <number>math.norm(b);
 
     return <number>math.acos(dot / absProduct);
+}
+
+export function unitVec(vec: math.Matrix): math.Matrix {
+    let sum = 0;
+    for (let i = 0; i < vec.size()[0]; i++) {
+        sum += math.square(vec.get([i]));
+    }
+    const len = math.sqrt(sum);
+    return <math.Matrix>math.divide(vec, len);
+}
+
+export function combineVectorsToMatrix(vectors: math.Matrix[]): math.Matrix {
+    const res: number[][] = [];
+    for (let i = 0; i < vectors.length; i++) {
+        const v: number[] = [];
+        for (let j = 0; j < vectors[i].size()[0]; j++) {
+            v.push(vectors[i].get([j]));
+        }
+        res.push(v);
+    }
+    return math.matrix(res);
 }

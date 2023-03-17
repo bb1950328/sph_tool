@@ -1,4 +1,11 @@
-import {angleBetweenVectors, formatArtilleryPromilleValue, LV03coordinates, solveQuadraticEquation} from "@/util";
+import {
+    unitVec,
+    angleBetweenVectors,
+    findMonotonicFunctionArgument,
+    formatArtilleryPromilleValue,
+    LV03coordinates,
+    solveQuadraticEquation, combineVectorsToMatrix
+} from "@/util";
 import {glMatrix, vec2, vec3} from "gl-matrix"
 import * as math from "mathjs";
 
@@ -164,7 +171,7 @@ export function poseEstimation2(input: PoseEstimationInputParams): CameraPose {
     const Oc_P1c = math.subtract(P1c, Oc);
     const Oc_p1c = math.subtract(p1c, Oc);
     // @ts-ignore
-    const Ayc: number = math.acos(math.dot(Oc_P1c, Oc_p1c)/(math.norm(Oc_P1c)*math.norm(Oc_p1c)));
+    const Ayc: number = math.acos(math.dot(Oc_P1c, Oc_p1c) / (math.norm(Oc_P1c) * math.norm(Oc_p1c)));
 
     //equation (14)
     const RcYc = math.matrix([
@@ -181,7 +188,7 @@ export function poseEstimation2(input: PoseEstimationInputParams): CameraPose {
     const Oc_P1c1 = math.subtract(P1_c1, Oc);
     const Oc_p1c1 = math.subtract(p1_c1, Oc);
     // @ts-ignore
-    const Ax_c1: number = math.acos(math.dot(Oc_P1c1, Oc_p1c1)/(math.norm(Oc_P1c1)*math.norm(Oc_p1c1)));
+    const Ax_c1: number = math.acos(math.dot(Oc_P1c1, Oc_p1c1) / (math.norm(Oc_P1c1) * math.norm(Oc_p1c1)));
 
     //equation (17)
     const RcXc1 = math.matrix([
@@ -213,24 +220,54 @@ export interface PoseEstimationInputParams2 {
     referencePoints: ReferencePoint2[],
 }
 
-export function poseEstimation3(input: PoseEstimationInputParams2): CameraPose {
+export function poseEstimation3(input: PoseEstimationInputParams2): [number, math.Matrix] {
     const camCoords = coordToMatrix(input.cameraPosition);
     const worldCamToPoint: math.Matrix[] = [];
-    for (const rp of input.referencePoints) {
+    for (let i = 0; i < 2; i++){
+        const rp = input.referencePoints[i];
         const rpCoords = coordToMatrix(rp.worldCoords);
         worldCamToPoint.push(math.subtract(rpCoords, camCoords));
     }
     const angleBetweenReferencePoints = angleBetweenVectors(worldCamToPoint[0], worldCamToPoint[1]);
 
+    function createCamSpace3dVectors(scale: number): [math.Matrix, math.Matrix] {
+        const camSpace3dVectors: math.Matrix[] = [];
+        for (let i = 0; i < 2; i++) {
+            const imgCoords = input.referencePoints[i].imgCoords;
+            camSpace3dVectors.push(math.matrix([
+                imgCoords.get([0]) * scale,
+                imgCoords.get([1]) * scale,
+                1,
+            ]));
+        }
+        // @ts-ignore
+        return camSpace3dVectors;
+    }
+
+    const f = (scale: number) => {
+        const camSpace3dVectors = createCamSpace3dVectors(scale);
+        return angleBetweenVectors(camSpace3dVectors[0], camSpace3dVectors[1]);
+    }
+    const scale = findMonotonicFunctionArgument(f, 0, 10, angleBetweenReferencePoints);
+    const camSpace3dVectors = createCamSpace3dVectors(scale);
+
     //make two vectors for the two reference points in camera space (angle between them is the same as the angle between the world reference vectors)
 
     //use triad method to find rotation
+    //https://en.wikipedia.org/wiki/Triad_method
+    const R1 = worldCamToPoint[0];
+    const R2 = worldCamToPoint[1];
+    const r1 = camSpace3dVectors[0];
+    const r2 = camSpace3dVectors[1];
 
-    return {
-        position: {x: 0, y: 0, z: 0},
-        xDir: vec3.create(),
-        yDir: vec3.create(),
-        zDir: vec3.create(),
-    };
+    const Shat = unitVec(R1);// (4)
+    const shat = unitVec(r1);// (5)
+    const Mhat = unitVec(<math.Matrix>math.cross(R1, R2));// (6)
+    const mhat = unitVec(<math.Matrix>math.cross(r1, r2));// (7)
+
+    const Ahat = math.multiply(combineVectorsToMatrix([Shat, Mhat, <math.Matrix>math.cross(Shat, Mhat)]),
+        math.transpose(combineVectorsToMatrix([shat, mhat, <math.Matrix>math.cross(shat, mhat)])));// (9)
+
+    return [scale, Ahat];
 }
 
